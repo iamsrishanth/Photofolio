@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { GALLERY_WORKS, COUPLE_STORIES } from '@/lib/portfolio-data';
 import type { GalleryWork } from '@/lib/portfolio-logic';
@@ -110,30 +110,22 @@ export default function HomePage() {
           }
         />
 
-        <Suspense fallback={null}>
-          <PortfolioGallery
-            savedIds={savedIds}
-            onToggleSave={handleToggleSave}
-            onOpenLightbox={handleOpenLightbox}
-            onSelectStory={handleSelectStory}
-          />
-        </Suspense>
+        <PortfolioGallery
+          savedIds={savedIds}
+          onToggleSave={handleToggleSave}
+          onOpenLightbox={handleOpenLightbox}
+          onSelectStory={handleSelectStory}
+        />
 
-        <Suspense fallback={null}>
-          <CoupleMonographs
-            activeStoryId={activeStoryId}
-            onSelectStory={setActiveStoryId}
-            onOpenLightbox={handleOpenLightbox}
-          />
-        </Suspense>
+        <CoupleMonographs
+          activeStoryId={activeStoryId}
+          onSelectStory={setActiveStoryId}
+          onOpenLightbox={handleOpenLightbox}
+        />
 
-        <Suspense fallback={null}>
-          <AtelierEthosSection onOpenLightbox={handleOpenLightbox} />
-        </Suspense>
+        <AtelierEthosSection onOpenLightbox={handleOpenLightbox} />
 
-        <Suspense fallback={null}>
-          <CommissionSection savedIds={savedIds} />
-        </Suspense>
+        <CommissionSection savedIds={savedIds} />
       </main>
 
       <Footer onNavigate={scrollToSection} inert={isModalOpen} />
