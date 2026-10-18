@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { STUDIO_INFO } from '@/lib/portfolio-data';
 
 interface NavbarProps {
   onNavigate: (sectionId: string) => void;
@@ -28,7 +29,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
           onClick={(e) => handleLinkClick(e, 'top')}
           className="font-serif text-2xl font-normal tracking-tight text-[#141413] whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#141413]"
         >
-          Light of Love
+          {STUDIO_INFO.name}
         </a>
 
         {/* Zone 2: 4 concise single-line text navigation links */}
@@ -41,28 +42,28 @@ export function Navbar({ onNavigate }: NavbarProps) {
             onClick={(e) => handleLinkClick(e, 'portfolio')}
             className="hover:text-[#141413] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
           >
-            Portfolio
+            Gallery (23)
           </a>
           <a
             href="#monographs"
             onClick={(e) => handleLinkClick(e, 'monographs')}
             className="hover:text-[#141413] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
           >
-            Monographs
-          </a>
-          <a
-            href="#collections"
-            onClick={(e) => handleLinkClick(e, 'collections')}
-            className="hover:text-[#141413] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
-          >
-            Collections
+            Carousels (5)
           </a>
           <a
             href="#atelier"
             onClick={(e) => handleLinkClick(e, 'atelier')}
             className="hover:text-[#141413] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
           >
-            Atelier
+            @light_of_love__
+          </a>
+          <a
+            href="#collections"
+            onClick={(e) => handleLinkClick(e, 'collections')}
+            className="hover:text-[#141413] hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
+          >
+            #WEDDING &amp; EVENTS
           </a>
         </nav>
 
@@ -73,7 +74,7 @@ export function Navbar({ onNavigate }: NavbarProps) {
             onClick={(e) => handleLinkClick(e, 'commission')}
             className="px-4 py-2 text-xs sm:text-sm font-medium text-[#FAF8F5] bg-[#141413] rounded-lg hover:bg-[#2C2A28] transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#141413]"
           >
-            Book Consultation
+            Inquire Now
           </button>
 
           <button
@@ -99,28 +100,28 @@ export function Navbar({ onNavigate }: NavbarProps) {
             onClick={(e) => handleLinkClick(e, 'portfolio')}
             className="block py-2.5 text-base font-medium text-[#141413] border-b border-[#EFECE6]"
           >
-            Portfolio Gallery
+            Gallery Archive (23 Frames)
           </a>
           <a
             href="#monographs"
             onClick={(e) => handleLinkClick(e, 'monographs')}
             className="block py-2.5 text-base font-medium text-[#141413] border-b border-[#EFECE6]"
           >
-            Couple Monographs
-          </a>
-          <a
-            href="#collections"
-            onClick={(e) => handleLinkClick(e, 'collections')}
-            className="block py-2.5 text-base font-medium text-[#141413] border-b border-[#EFECE6]"
-          >
-            Collections & Pricing
+            Instagram Carousels (5 Series)
           </a>
           <a
             href="#atelier"
             onClick={(e) => handleLinkClick(e, 'atelier')}
+            className="block py-2.5 text-base font-medium text-[#141413] border-b border-[#EFECE6]"
+          >
+            Profile &amp; @light_of_love__
+          </a>
+          <a
+            href="#collections"
+            onClick={(e) => handleLinkClick(e, 'collections')}
             className="block py-2.5 text-base font-medium text-[#141413]"
           >
-            Atelier & @light_of_love__
+            #WEDDING &amp; EVENTS Inquiry
           </a>
         </nav>
       )}

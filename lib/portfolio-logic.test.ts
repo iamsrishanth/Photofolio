@@ -3,126 +3,168 @@ import assert from 'node:assert/strict';
 import {
   filterAndSortGallery,
   getAdjacentWorkIndex,
-  formatExifSummary,
-  calculateCommissionEstimate,
+  formatCaptureCredit,
+  summarizeSelectedCelebrations,
   validateInquiryForm,
   type GalleryWork,
+  type EventCoverageOption,
 } from './portfolio-logic.ts';
 
 const sampleWorks: GalleryWork[] = [
   {
-    id: 'w-1',
+    id: 'ig-DR8zWcOCBSn-1',
     frameNumber: '01',
-    title: 'Golden Colonnade Vows',
-    couple: 'Clara & Matteo',
-    category: 'ceremony',
-    location: 'Ravello, Amalfi Coast',
-    country: 'Italy',
-    date: 'September 2026',
-    year: 2026,
-    image: '/images/hero-editorial.jpg',
+    slideNumber: 1,
+    totalSlidesInPost: 5,
+    postShortcode: 'DR8zWcOCBSn',
+    postUrl: 'https://www.instagram.com/p/DR8zWcOCBSn/',
+    title: 'Abhishikth & Deepthi — Christian Wedding Portrait I',
+    couple: 'Abhishikth & Deepthi',
+    collaboratorHandle: '@mende_deepthi',
+    collaboratorUrl: 'https://www.instagram.com/mende_deepthi/',
+    category: 'christian-wedding',
+    categoryLabel: 'Christian Wedding',
+    location: 'Hyderabad , Telengana. India',
+    locationUrl: 'https://www.instagram.com/explore/locations/113332783424828/hyderabad-telengana-india/',
+    image: '/images/ig-DR8zWcOCBSn-1.jpg',
     aspectRatio: 'portrait',
+    dimensions: '1440 × 1919',
     bentoSpan: 'hero',
-    camera: 'Leica M6',
-    lens: '35mm Summilux f/1.4',
-    filmStock: 'Kodak Portra 400',
-    aperture: 'f/2.0',
-    shutter: '1/1000s',
-    iso: 400,
+    capturedOn: '@nikonindiaofficial',
+    cameraHandleUrl: 'https://www.instagram.com/nikonindiaofficial/',
+    creditedBy: '@light_of_love__ and team',
     instagramHandle: '@light_of_love__',
-    instagramCode: 'LOL-01',
-    instagramLikes: 1840,
-    caption: 'Sunlit limestone colonnade at Villa Cimbrone.',
-    storyId: 'story-1',
+    caption: 'From the aisle to the altar, every moment felt like a blessing. Abhishikth & Deepthi’s Christian wedding was filled with purity, joy, and God’s grace 🤍',
+    hashtags: ['#weddingphotography', '#christianwedding', '#hyderabadweddings'],
+    storyId: 'post-DR8zWcOCBSn',
     featuredOrder: 2,
   },
   {
-    id: 'w-2',
+    id: 'ig-DFAfTWaMW2c-1',
     frameNumber: '02',
-    title: 'Morning Silk & Shadow',
-    couple: 'Élodie & Julian',
-    category: 'editorial',
-    location: 'Paris',
-    country: 'France',
-    date: 'May 2025',
-    year: 2025,
-    image: '/images/bridal-window.jpg',
+    slideNumber: 1,
+    totalSlidesInPost: 4,
+    postShortcode: 'DFAfTWaMW2c',
+    postUrl: 'https://www.instagram.com/p/DFAfTWaMW2c/',
+    title: 'Amulya & Yash — Couple Portrait I',
+    couple: 'Amulya & Yash',
+    collaboratorHandle: '@light_of_love__',
+    collaboratorUrl: 'https://www.instagram.com/light_of_love__/',
+    category: 'couple-portraits',
+    categoryLabel: 'Couple Shoot',
+    location: 'mallika gardens,shamshabad',
+    locationUrl: 'https://www.instagram.com/explore/locations/263769849/mallika-gardens-shamshabad/',
+    image: '/images/ig-DFAfTWaMW2c-1.jpg',
     aspectRatio: 'portrait',
+    dimensions: '1440 × 1800',
     bentoSpan: 'tall',
-    camera: 'Contax 645',
-    lens: '80mm Planar f/2.0',
-    filmStock: 'Ilford HP5 Plus',
-    aperture: 'f/2.8',
-    shutter: '1/500s',
-    iso: 400,
+    capturedOn: '@nikonindiaofficial Z 7 ii',
+    cameraHandleUrl: 'https://www.instagram.com/nikonindiaofficial/',
+    creditedBy: '@light_of_love__ Films',
     instagramHandle: '@light_of_love__',
-    instagramCode: 'LOL-02',
-    instagramLikes: 2410,
-    caption: 'Directional morning light across draped silk.',
-    storyId: 'story-2',
+    caption: 'Amulya & Yash . . . Captured on @nikonindiaofficial Z 7 ii by @light_of_love__ Films',
+    hashtags: ['#weddingphotography', '#amulyayash', '#lightoflove'],
+    storyId: 'post-DFAfTWaMW2c',
     featuredOrder: 1,
   },
   {
-    id: 'w-3',
+    id: 'ig-DFSQ_qds4JO-1',
     frameNumber: '03',
-    title: 'Dusk Over Coastal Dunes',
-    couple: 'Sora & Liam',
-    category: 'elopement',
-    location: 'Big Sur, California',
-    country: 'USA',
-    date: 'October 2026',
-    year: 2026,
-    image: '/images/elopement-dunes.jpg',
-    aspectRatio: 'landscape',
-    bentoSpan: 'wide',
-    camera: 'Leica SL2-S',
-    lens: '50mm APO-Summicron',
-    filmStock: 'Kodak Tri-X 400',
-    aperture: 'f/2.0',
-    shutter: '1/250s',
-    iso: 800,
+    slideNumber: 1,
+    totalSlidesInPost: 4,
+    postShortcode: 'DFSQ_qds4JO',
+    postUrl: 'https://www.instagram.com/p/DFSQ_qds4JO/',
+    title: 'Anjali & Ashok — Bridal Portrait I',
+    couple: 'Anjali & Ashok',
+    collaboratorHandle: '@geetuu_0612',
+    collaboratorUrl: 'https://www.instagram.com/geetuu_0612/',
+    category: 'bridal',
+    categoryLabel: 'Bridal Portrait',
+    location: 'Nellore City',
+    locationUrl: 'https://www.instagram.com/explore/locations/250979538/nellore-city/',
+    image: '/images/ig-DFSQ_qds4JO-1.jpg',
+    aspectRatio: 'portrait',
+    dimensions: '1440 × 1800',
+    bentoSpan: 'standard',
+    capturedOn: '@sonyalphain',
+    cameraHandleUrl: 'https://www.instagram.com/sonyalphain/',
+    creditedBy: '@light_of_love__ Films',
     instagramHandle: '@light_of_love__',
-    instagramCode: 'LOL-03',
-    instagramLikes: 1520,
-    caption: 'Windswept coastal dunes at blue hour.',
-    storyId: 'story-3',
+    caption: 'Her smile tells a story of love, grace, and a brand-new beginning 💚 . Captured on @sonyalphain by @light_of_love__ Films',
+    hashtags: ['#weddingphotography', '#anjaliashok', '#lightoflove'],
+    storyId: 'post-DFSQ_qds4JO',
     featuredOrder: 3,
   },
 ];
 
-test('filterAndSortGallery filters by category and sorts by featured order', () => {
+const sampleEvents: EventCoverageOption[] = [
+  {
+    id: 'christian-wedding',
+    number: '01',
+    name: 'Christian Wedding Coverage',
+    instagramTag: '#christianwedding',
+    featuredCouple: 'Abhishikth & Deepthi',
+    featuredLocation: 'Hyderabad , Telengana. India',
+    capturedOn: '@nikonindiaofficial',
+    postShortcode: 'DR8zWcOCBSn',
+    postUrl: 'https://www.instagram.com/p/DR8zWcOCBSn/',
+    highlights: ['Aisle to altar ceremony', 'Bridal & groom portraits'],
+  },
+  {
+    id: 'bridal',
+    number: '02',
+    name: 'Bridal & Wedding Portraits',
+    instagramTag: '#anjaliashok',
+    featuredCouple: 'Anjali & Ashok',
+    featuredLocation: 'Nellore City',
+    capturedOn: '@sonyalphain',
+    postShortcode: 'DFSQ_qds4JO',
+    postUrl: 'https://www.instagram.com/p/DFSQ_qds4JO/',
+    highlights: ['Bridal elegance portraits', 'Ceremonial candid moments'],
+  },
+];
+
+test('filterAndSortGallery filters by @light_of_love__ category and sorts by featured order', () => {
   const allFeatured = filterAndSortGallery(sampleWorks, {
     category: 'all',
     searchQuery: '',
     sortBy: 'featured',
   });
   assert.equal(allFeatured.length, 3);
-  assert.equal(allFeatured[0].id, 'w-2');
+  assert.equal(allFeatured[0].id, 'ig-DFAfTWaMW2c-1');
 
-  const ceremonies = filterAndSortGallery(sampleWorks, {
-    category: 'ceremony',
+  const christianWedding = filterAndSortGallery(sampleWorks, {
+    category: 'christian-wedding',
     searchQuery: '',
     sortBy: 'featured',
   });
-  assert.equal(ceremonies.length, 1);
-  assert.equal(ceremonies[0].id, 'w-1');
+  assert.equal(christianWedding.length, 1);
+  assert.equal(christianWedding[0].couple, 'Abhishikth & Deepthi');
 });
 
-test('filterAndSortGallery filters by search query and saved bookmarks', () => {
-  const bySearch = filterAndSortGallery(sampleWorks, {
+test('filterAndSortGallery searches by Instagram shortcode, location, camera, or hashtag', () => {
+  const byLocation = filterAndSortGallery(sampleWorks, {
     category: 'all',
-    searchQuery: 'amalfi',
+    searchQuery: 'shamshabad',
     sortBy: 'featured',
   });
-  assert.equal(bySearch.length, 1);
-  assert.equal(bySearch[0].couple, 'Clara & Matteo');
+  assert.equal(byLocation.length, 1);
+  assert.equal(byLocation[0].couple, 'Amulya & Yash');
+
+  const byCamera = filterAndSortGallery(sampleWorks, {
+    category: 'all',
+    searchQuery: 'sonyalphain',
+    sortBy: 'featured',
+  });
+  assert.equal(byCamera.length, 1);
+  assert.equal(byCamera[0].couple, 'Anjali & Ashok');
 
   const savedOnly = filterAndSortGallery(sampleWorks, {
     category: 'all',
     searchQuery: '',
-    sortBy: 'film-sequence',
+    sortBy: 'frame-sequence',
     onlySaved: true,
-    savedIds: ['w-3', 'w-1'],
+    savedIds: ['ig-DFSQ_qds4JO-1', 'ig-DR8zWcOCBSn-1'],
   });
   assert.equal(savedOnly.length, 2);
   assert.equal(savedOnly[0].frameNumber, '01');
@@ -130,60 +172,56 @@ test('filterAndSortGallery filters by search query and saved bookmarks', () => {
 });
 
 test('getAdjacentWorkIndex wraps circularly in both directions', () => {
-  assert.equal(getAdjacentWorkIndex(0, 5, 'prev'), 4);
-  assert.equal(getAdjacentWorkIndex(4, 5, 'next'), 0);
-  assert.equal(getAdjacentWorkIndex(2, 5, 'next'), 3);
+  assert.equal(getAdjacentWorkIndex(0, 23, 'prev'), 22);
+  assert.equal(getAdjacentWorkIndex(22, 23, 'next'), 0);
+  assert.equal(getAdjacentWorkIndex(4, 23, 'next'), 5);
   assert.equal(getAdjacentWorkIndex(0, 0, 'next'), -1);
 });
 
-test('formatExifSummary creates clean unboxed typographic metadata', () => {
-  const summary = formatExifSummary(sampleWorks[0]);
+test('formatCaptureCredit formats authentic @light_of_love__ Instagram credit', () => {
+  const credit = formatCaptureCredit(sampleWorks[1]);
   assert.equal(
-    summary,
-    'Leica M6 · 35mm Summilux f/1.4 · f/2.0 · 1/1000s · ISO 400 · Kodak Portra 400'
+    credit,
+    'Captured on @nikonindiaofficial Z 7 ii · @light_of_love__ Films · IG /p/DFAfTWaMW2c (Slide 1/4)'
   );
 });
 
-test('calculateCommissionEstimate computes total investment and 35% retainer accurately', () => {
-  const estimate = calculateCommissionEstimate({
-    basePrice: 6800,
-    extraHours: 2,
-    hourlyRate: 450,
-    selectedAddOnPrices: [950, 1200],
+test('summarizeSelectedCelebrations aggregates selected events, cameras, and saved frames', () => {
+  const summary = summarizeSelectedCelebrations({
+    selectedEventIds: ['christian-wedding', 'bridal'],
+    availableEvents: sampleEvents,
+    savedWorkIds: ['ig-DR8zWcOCBSn-1'],
+    allWorks: sampleWorks,
   });
-  assert.equal(estimate.extraHoursCost, 900);
-  assert.equal(estimate.addOnsTotal, 2150);
-  assert.equal(estimate.totalInvestment, 9850);
-  assert.equal(estimate.retainerDue, 3448);
+  assert.equal(summary.selectedCount, 2);
+  assert.deepEqual(summary.camerasUsed, ['@nikonindiaofficial', '@sonyalphain']);
+  assert.equal(summary.savedFramesSummary.length, 1);
 });
 
-test('validateInquiryForm rejects empty/invalid inputs and accepts complete inquiry', () => {
+test('validateInquiryForm validates required fields and accepts authentic booking request', () => {
   const invalid = validateInquiryForm({
     coupleNames: 'A',
-    email: 'not-an-email',
+    contactInfo: '123',
     eventDate: '',
     venueLocation: '',
-    collectionId: 'signature',
-    extraHours: 0,
-    selectedAddOns: [],
-    visionNotes: 'short',
+    selectedEvents: [],
+    notes: 'short',
   });
   assert.equal(invalid.valid, false);
   assert.ok(invalid.errors.coupleNames);
-  assert.ok(invalid.errors.email);
+  assert.ok(invalid.errors.contactInfo);
   assert.ok(invalid.errors.eventDate);
   assert.ok(invalid.errors.venueLocation);
-  assert.ok(invalid.errors.visionNotes);
+  assert.ok(invalid.errors.selectedEvents);
+  assert.ok(invalid.errors.notes);
 
   const valid = validateInquiryForm({
-    coupleNames: 'Elena & Marcus',
-    email: 'elena.marcus@example.com',
-    eventDate: '2027-06-19',
-    venueLocation: 'Lake Como, Italy',
-    collectionId: 'signature',
-    extraHours: 2,
-    selectedAddOns: ['film-pack'],
-    visionNotes: 'Intimate sunset ceremony in an olive grove followed by candlelit courtyard dinner.',
+    coupleNames: 'Meghana & Kiran',
+    contactInfo: '@meghanakiran / meghana@example.com',
+    eventDate: '2026-12-18',
+    venueLocation: 'Hyderabad, Telangana, India',
+    selectedEvents: ['christian-wedding'],
+    notes: 'Looking for wedding & haldi photography by @light_of_love__ Films in Hyderabad.',
   });
   assert.equal(valid.valid, true);
   assert.equal(Object.keys(valid.errors).length, 0);

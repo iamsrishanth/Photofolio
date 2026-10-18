@@ -1,15 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Check, Plus, Minus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Check, CheckCircle2, AlertCircle, ArrowUpRight } from 'lucide-react';
 import {
-  COLLECTION_TIERS,
-  ADD_ON_OPTIONS,
+  EVENT_COVERAGE_OPTIONS,
   GALLERY_WORKS,
   STUDIO_INFO,
 } from '@/lib/portfolio-data';
 import {
-  calculateCommissionEstimate,
+  summarizeSelectedCelebrations,
   validateInquiryForm,
   type InquiryFormInput,
 } from '@/lib/portfolio-logic';
@@ -18,50 +17,39 @@ interface CommissionSectionProps {
   savedIds: string[];
 }
 
-interface SubmittedDossier extends InquiryFormInput {
+interface SubmittedInquiry extends InquiryFormInput {
   submittedAt: string;
-  totalInvestment: number;
-  retainerDue: number;
-  collectionName: string;
+  selectedCelebrationNames: string[];
   moodboardFrames: string[];
 }
 
 export function CommissionSection({ savedIds }: CommissionSectionProps) {
-  const [selectedCollectionId, setSelectedCollectionId] = useState<
-    'elopement' | 'signature' | 'destination'
-  >('signature');
-  const [extraHours, setExtraHours] = useState<number>(0);
-  const [selectedAddOns, setSelectedAddOns] = useState<string[]>(['analog-vault']);
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([
+    'christian-wedding',
+    'couple-portraits',
+  ]);
 
   const [coupleNames, setCoupleNames] = useState('');
-  const [email, setEmail] = useState('');
+  const [contactInfo, setContactInfo] = useState('');
   const [eventDate, setEventDate] = useState('');
   const [venueLocation, setVenueLocation] = useState('');
-  const [visionNotes, setVisionNotes] = useState('');
+  const [notes, setNotes] = useState('');
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof InquiryFormInput, string>>
   >({});
-  const [submittedDossier, setSubmittedDossier] =
-    useState<SubmittedDossier | null>(null);
+  const [submittedInquiry, setSubmittedInquiry] =
+    useState<SubmittedInquiry | null>(null);
 
-  const activeCollection =
-    COLLECTION_TIERS.find((t) => t.id === selectedCollectionId) ??
-    COLLECTION_TIERS[1];
-
-  const selectedAddOnPrices = ADD_ON_OPTIONS.filter((a) =>
-    selectedAddOns.includes(a.id)
-  ).map((a) => a.price);
-
-  const estimate = calculateCommissionEstimate({
-    basePrice: activeCollection.basePrice,
-    extraHours,
-    hourlyRate: 450,
-    selectedAddOnPrices,
+  const summary = summarizeSelectedCelebrations({
+    selectedEventIds: selectedEvents,
+    availableEvents: EVENT_COVERAGE_OPTIONS,
+    savedWorkIds: savedIds,
+    allWorks: GALLERY_WORKS,
   });
 
-  const handleToggleAddOn = (id: string) => {
-    setSelectedAddOns((prev) =>
+  const handleToggleCelebration = (id: string) => {
+    setSelectedEvents((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
@@ -70,13 +58,11 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
     e.preventDefault();
     const formPayload: InquiryFormInput = {
       coupleNames,
-      email,
+      contactInfo,
       eventDate,
       venueLocation,
-      collectionId: selectedCollectionId,
-      extraHours,
-      selectedAddOns,
-      visionNotes,
+      selectedEvents,
+      notes,
     };
 
     const validation = validateInquiryForm(formPayload);
@@ -86,21 +72,16 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
     }
 
     setErrors({});
-    const savedTitles = GALLERY_WORKS.filter((w) => savedIds.includes(w.id)).map(
-      (w) => `Plate ${w.frameNumber} (${w.title})`
-    );
 
-    setSubmittedDossier({
+    setSubmittedInquiry({
       ...formPayload,
       submittedAt: new Date().toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       }),
-      totalInvestment: estimate.totalInvestment,
-      retainerDue: estimate.retainerDue,
-      collectionName: activeCollection.name,
-      moodboardFrames: savedTitles,
+      selectedCelebrationNames: summary.selectedNames,
+      moodboardFrames: summary.savedFramesSummary,
     });
   };
 
@@ -113,33 +94,33 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
         {/* Section Heading */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
           <div>
-            <div className="flex items-center gap-2 text-xs text-[#57534E] mb-3">
-              <span>04. Collections &amp; Bespoke Commissions</span>
+            <div className="flex items-center gap-2 text-xs text-[#57534E] font-mono mb-3">
+              <span>04. #WEDDING &amp; EVENTS</span>
               <span aria-hidden="true">·</span>
-              <span>2026 &amp; 2027 Wedding Calendar</span>
+              <span>{STUDIO_INFO.filmsHandle}</span>
             </div>
             <h2
               className="font-serif text-3xl sm:text-5xl text-[#141413] tracking-tight"
               style={{ textWrap: 'balance' }}
             >
-              Transparent Investment &amp; Availability
+              Celebrations Documented on {STUDIO_INFO.instagramHandle}
             </h2>
           </div>
 
           <p className="text-sm sm:text-base text-[#44403C] max-w-md leading-relaxed">
-            We accept only eighteen wedding commissions per year to ensure every film roll
-            and monograph receives our undivided darkroom and editorial attention.
+            {STUDIO_INFO.ctaNotice} Select the celebration categories featured on{' '}
+            {STUDIO_INFO.instagramHandle} and attach your saved frames to inquire.
           </p>
         </div>
 
-        {/* 3 Collection Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-16">
-          {COLLECTION_TIERS.map((tier) => {
-            const isSelected = tier.id === selectedCollectionId;
+        {/* 5 Authentic Celebration Coverage Cards from @light_of_love__ */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {EVENT_COVERAGE_OPTIONS.map((option) => {
+            const isSelected = selectedEvents.includes(option.id);
             return (
               <div
-                key={tier.id}
-                className={`p-6 sm:p-8 rounded-2xl border flex flex-col justify-between transition-colors ${
+                key={option.id}
+                className={`p-6 sm:p-7 rounded-2xl border flex flex-col justify-between transition-colors ${
                   isSelected
                     ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
                     : 'bg-[#FAF8F5] text-[#141413] border-[#D6D0C6]'
@@ -151,38 +132,30 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       isSelected ? 'text-stone-400' : 'text-[#78716C]'
                     }`}
                   >
-                    <span>Collection {tier.number}</span>
-                    <span>{tier.idealFor}</span>
+                    <span>Series {option.number}</span>
+                    <span>Post /p/{option.postShortcode}</span>
                   </div>
 
                   <h3 className="font-serif text-2xl sm:text-3xl tracking-tight mb-2">
-                    {tier.name}
+                    {option.name}
                   </h3>
 
-                  <p
-                    className={`text-xs sm:text-sm leading-relaxed mb-6 ${
-                      isSelected ? 'text-stone-300' : 'text-[#44403C]'
+                  <div
+                    className={`text-xs font-mono mb-4 ${
+                      isSelected ? 'text-stone-300' : 'text-[#57534E]'
                     }`}
                   >
-                    {tier.tagline}
-                  </p>
-
-                  <div className="pb-6 mb-6 border-b border-current/15 flex items-baseline gap-2">
-                    <span className="font-serif text-3xl sm:text-4xl tabular-nums">
-                      ${tier.basePrice.toLocaleString()}
-                    </span>
-                    <span
-                      className={`text-xs font-mono tabular-nums ${
-                        isSelected ? 'text-stone-400' : 'text-[#57534E]'
-                      }`}
-                    >
-                      · {tier.includedHours} hrs included
-                    </span>
+                    {option.featuredCouple} · {option.featuredLocation}
                   </div>
 
-                  <ul className="space-y-2.5 mb-8 text-xs sm:text-sm">
-                    {tier.deliverables.map((item) => (
-                      <li key={item} className="flex items-start gap-2.5">
+                  <div className="pb-5 mb-5 border-b border-current/15 flex items-center justify-between text-xs font-mono tabular-nums">
+                    <span>Captured on {option.capturedOn}</span>
+                    <span>{option.instagramTag}</span>
+                  </div>
+
+                  <ul className="space-y-2 mb-6 text-xs sm:text-sm">
+                    {option.highlights.map((item) => (
+                      <li key={item} className="flex items-start gap-2">
                         <Check
                           className={`w-4 h-4 shrink-0 mt-0.5 ${
                             isSelected ? 'text-stone-300' : 'text-[#141413]'
@@ -196,86 +169,61 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
 
                 <button
                   type="button"
-                  onClick={() => setSelectedCollectionId(tier.id)}
+                  onClick={() => handleToggleCelebration(option.id)}
                   aria-pressed={isSelected}
-                  className={`w-full py-3 px-4 rounded-lg text-xs font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                  className={`w-full py-3 px-4 rounded-lg text-xs font-medium inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
                     isSelected
                       ? 'bg-[#FAF8F5] text-[#141413]'
                       : 'bg-[#141413] text-[#FAF8F5] hover:bg-[#2C2A28]'
                   }`}
                 >
-                  {isSelected
-                    ? `Selected: ${tier.name}`
-                    : `Select ${tier.name}`}
+                  {isSelected && <Check className="w-3.5 h-3.5" />}
+                  <span>
+                    {isSelected
+                      ? `Included: ${option.name}`
+                      : `Include ${option.name}`}
+                  </span>
                 </button>
               </div>
             );
           })}
         </div>
 
-        {/* Interactive Commission Estimator + Inquiry Form Split */}
+        {/* Interactive Celebration Selector Summary + Inquiry Form Split */}
         <div
           id="commission"
           className="scroll-mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-8 border-t border-[#D6D0C6]"
         >
-          {/* Left Column: Interactive Investment Configurator */}
+          {/* Left Column: Selected Instagram Series & Camera Summary */}
           <div className="lg:col-span-5 space-y-6 bg-[#FAF8F5] p-6 sm:p-8 rounded-2xl border border-[#D6D0C6]">
             <div>
               <div className="text-xs text-[#57534E] font-mono mb-1">
-                Live Monograph Estimator
+                {STUDIO_INFO.instagramHandle} · {STUDIO_INFO.badgeText}
               </div>
               <h3 className="font-serif text-2xl sm:text-3xl text-[#141413]">
-                Tailor Your Coverage
+                Selected Celebration Brief
               </h3>
             </div>
 
-            {/* Extra Coverage Hours Counter */}
-            <div className="py-4 border-y border-[#E6E1DA] flex items-center justify-between gap-4">
-              <div>
-                <div className="text-sm font-medium text-[#141413]">
-                  Additional Coverage Hours
-                </div>
-                <div className="text-xs text-[#57534E] font-mono tabular-nums">
-                  +$450 / hour beyond {activeCollection.includedHours} included hours
-                </div>
-              </div>
+            {errors.selectedEvents && (
+              <p
+                role="alert"
+                className="text-xs text-red-700 flex items-center gap-1.5 bg-red-50 p-3 rounded-lg border border-red-200"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{errors.selectedEvents}</span>
+              </p>
+            )}
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setExtraHours((h) => Math.max(0, h - 1))}
-                  aria-label="Decrease additional coverage hours"
-                  className="w-8 h-8 rounded-md border border-[#D6D0C6] inline-flex items-center justify-center hover:bg-[#EFECE6] cursor-pointer"
-                >
-                  <Minus className="w-3.5 h-3.5" />
-                </button>
-                <span
-                  data-testid="extra-hours-count"
-                  className="w-8 text-center font-mono text-sm font-semibold tabular-nums"
-                >
-                  +{extraHours}h
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setExtraHours((h) => Math.min(6, h + 1))}
-                  aria-label="Increase additional coverage hours"
-                  className="w-8 h-8 rounded-md border border-[#D6D0C6] inline-flex items-center justify-center hover:bg-[#EFECE6] cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Bespoke Add-On Checkboxes */}
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <div className="text-xs font-semibold text-[#141413]">
-                Atelier Additions &amp; Film Upgrades
+                Toggle Celebrations from @light_of_love__
               </div>
-              {ADD_ON_OPTIONS.map((addon) => {
-                const checked = selectedAddOns.includes(addon.id);
+              {EVENT_COVERAGE_OPTIONS.map((opt) => {
+                const checked = selectedEvents.includes(opt.id);
                 return (
                   <label
-                    key={addon.id}
+                    key={opt.id}
                     className={`flex items-start justify-between gap-3 p-3.5 rounded-xl border transition-colors cursor-pointer ${
                       checked
                         ? 'bg-[#EFECE6] border-[#141413]'
@@ -286,65 +234,67 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       <input
                         type="checkbox"
                         checked={checked}
-                        onChange={() => handleToggleAddOn(addon.id)}
+                        onChange={() => handleToggleCelebration(opt.id)}
                         className="mt-1 accent-[#141413]"
                       />
                       <div>
                         <div className="text-xs font-medium text-[#141413]">
-                          {addon.name}
+                          {opt.name}
                         </div>
-                        <div className="text-[11px] text-[#57534E] mt-0.5">
-                          {addon.description}
+                        <div className="text-[11px] text-[#57534E] font-mono mt-0.5">
+                          {opt.featuredCouple} · {opt.featuredLocation}
                         </div>
                       </div>
                     </div>
-                    <span className="font-mono text-xs font-medium text-[#141413] tabular-nums shrink-0">
-                      +${addon.price.toLocaleString()}
+                    <span className="font-mono text-[11px] font-medium text-[#141413] tabular-nums shrink-0">
+                      /p/{opt.postShortcode}
                     </span>
                   </label>
                 );
               })}
             </div>
 
-            {/* Tabular Summary Breakdown */}
-            <div className="pt-4 border-t border-[#D6D0C6] space-y-2 text-xs">
+            {/* Tabular Summary Breakdown of Selected Instagram Series */}
+            <div className="pt-4 border-t border-[#D6D0C6] space-y-2.5 text-xs">
               <div className="flex justify-between text-[#57534E]">
-                <span>{activeCollection.name}</span>
-                <span className="font-mono tabular-nums">
-                  ${estimate.basePrice.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-[#57534E]">
-                <span>Extra Hours (+{extraHours}h)</span>
-                <span className="font-mono tabular-nums">
-                  ${estimate.extraHoursCost.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex justify-between text-[#57534E]">
-                <span>Selected Atelier Additions</span>
-                <span className="font-mono tabular-nums">
-                  ${estimate.addOnsTotal.toLocaleString()}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-[#E6E1DA] flex items-baseline justify-between text-base font-semibold text-[#141413]">
-                <span>Estimated Total Investment</span>
+                <span>Selected Celebrations</span>
                 <span
-                  data-testid="estimated-total"
-                  className="font-serif text-2xl tabular-nums"
+                  data-testid="selected-celebration-count"
+                  className="font-mono font-semibold text-[#141413] tabular-nums"
                 >
-                  ${estimate.totalInvestment.toLocaleString()}
+                  {summary.selectedCount} Series
                 </span>
               </div>
-              <div className="flex justify-between text-[11px] font-mono text-[#78716C] tabular-nums">
-                <span>35% Reservation Retainer</span>
-                <span>${estimate.retainerDue.toLocaleString()}</span>
+              <div className="flex justify-between gap-4 text-[#57534E]">
+                <span>Credited Camera Systems</span>
+                <span className="font-mono text-right text-[#141413]">
+                  {summary.camerasUsed.length > 0
+                    ? summary.camerasUsed.join(' · ')
+                    : 'None selected'}
+                </span>
+              </div>
+              <div className="pt-3 border-t border-[#E6E1DA] flex items-center justify-between">
+                <span className="text-[#57534E]">Saved Moodboard Frames</span>
+                <span className="font-mono font-semibold text-[#141413] tabular-nums">
+                  {savedIds.length} Saved
+                </span>
               </div>
             </div>
+
+            <a
+              href={STUDIO_INFO.instagramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 px-4 rounded-lg border border-[#D6D0C6] text-xs font-medium text-[#141413] hover:bg-[#EFECE6] inline-flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <span>Visit {STUDIO_INFO.instagramHandle} on Instagram</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </a>
           </div>
 
-          {/* Right Column: Commission Inquiry Form */}
+          {/* Right Column: Booking Inquiry Form */}
           <div className="lg:col-span-7 bg-[#FAF8F5] p-6 sm:p-8 rounded-2xl border border-[#D6D0C6]">
-            {submittedDossier ? (
+            {submittedInquiry ? (
               <div
                 data-testid="inquiry-confirmation"
                 className="py-6 space-y-6"
@@ -353,47 +303,44 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                   <CheckCircle2 className="w-6 h-6 text-emerald-700 shrink-0" />
                   <div>
                     <div className="text-xs font-mono text-[#57534E]">
-                      Commission Dossier Registered · {submittedDossier.submittedAt}
+                      {STUDIO_INFO.name} ({STUDIO_INFO.instagramHandle}) ·{' '}
+                      {submittedInquiry.submittedAt}
                     </div>
                     <h3 className="font-serif text-3xl text-[#141413]">
-                      Thank You, {submittedDossier.coupleNames}
+                      Thank You, {submittedInquiry.coupleNames}
                     </h3>
                   </div>
                 </div>
 
                 <p className="text-sm text-[#44403C] leading-relaxed">
-                  Your wedding inquiry for{' '}
+                  Your wedding &amp; events inquiry for{' '}
                   <strong className="text-[#141413]">
-                    {submittedDossier.venueLocation}
+                    {submittedInquiry.venueLocation}
                   </strong>{' '}
                   on{' '}
                   <strong className="text-[#141413]">
-                    {submittedDossier.eventDate}
+                    {submittedInquiry.eventDate}
                   </strong>{' '}
-                  has been logged with our Paris &amp; Amalfi desk. A bespoke monograph
-                  proposal and availability confirmation has been prepared for{' '}
-                  <span className="underline">{submittedDossier.email}</span>.
+                  has been logged for{' '}
+                  <strong className="text-[#141413]">
+                    {STUDIO_INFO.name} ({STUDIO_INFO.instagramHandle})
+                  </strong>
+                  . Confirmation details have been prepared for{' '}
+                  <span className="underline">{submittedInquiry.contactInfo}</span>.
                 </p>
 
                 <div className="p-5 rounded-xl bg-[#F3EFEA] border border-[#E6E1DA] space-y-2 text-xs font-mono tabular-nums">
-                  <div className="flex justify-between">
-                    <span className="text-[#57534E]">Selected Collection:</span>
-                    <span className="text-[#141413] font-medium">
-                      {submittedDossier.collectionName}
+                  <div className="flex justify-between gap-4">
+                    <span className="text-[#57534E]">Selected Celebrations:</span>
+                    <span className="text-[#141413] font-medium text-right">
+                      {submittedInquiry.selectedCelebrationNames.join(', ')}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#57534E]">Estimated Commission:</span>
-                    <span className="text-[#141413] font-semibold">
-                      ${submittedDossier.totalInvestment.toLocaleString()} (Retainer: $
-                      {submittedDossier.retainerDue.toLocaleString()})
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#57534E]">Attached Moodboard Plates:</span>
-                    <span className="text-[#141413]">
-                      {submittedDossier.moodboardFrames.length > 0
-                        ? submittedDossier.moodboardFrames.join(', ')
+                  <div className="flex justify-between gap-4">
+                    <span className="text-[#57534E]">Saved @light_of_love__ Frames:</span>
+                    <span className="text-[#141413] text-right">
+                      {submittedInquiry.moodboardFrames.length > 0
+                        ? submittedInquiry.moodboardFrames.join(', ')
                         : 'None selected'}
                     </span>
                   </div>
@@ -401,7 +348,7 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
 
                 <button
                   type="button"
-                  onClick={() => setSubmittedDossier(null)}
+                  onClick={() => setSubmittedInquiry(null)}
                   className="px-5 py-2.5 text-xs font-medium bg-[#141413] text-[#FAF8F5] rounded-lg hover:bg-[#2C2A28] transition-colors cursor-pointer"
                 >
                   Edit or Submit Another Inquiry
@@ -412,15 +359,15 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6E1DA]">
                   <div>
                     <h3 className="font-serif text-2xl sm:text-3xl text-[#141413]">
-                      Request Date Availability
+                      Inquire with {STUDIO_INFO.name}
                     </h3>
-                    <p className="text-xs text-[#57534E] mt-0.5">
-                      Direct studio response within 24 hours ·{' '}
+                    <p className="text-xs text-[#57534E] font-mono mt-0.5">
+                      {STUDIO_INFO.badgeText} · {STUDIO_INFO.filmsHandle} ·{' '}
                       {STUDIO_INFO.instagramHandle}
                     </p>
                   </div>
                   <span className="text-xs font-mono text-[#57534E] tabular-nums">
-                    Moodboard Attached: {savedIds.length} Plate
+                    Moodboard Attached: {savedIds.length} Frame
                     {savedIds.length === 1 ? '' : 's'}
                   </span>
                 </div>
@@ -431,14 +378,14 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       htmlFor="couple-names"
                       className="block text-xs font-medium text-[#141413] mb-1.5"
                     >
-                      Couple Names *
+                      Couple or Client Names *
                     </label>
                     <input
                       id="couple-names"
                       type="text"
                       value={coupleNames}
                       onChange={(e) => setCoupleNames(e.target.value)}
-                      placeholder="e.g., Clara & Matteo"
+                      placeholder="e.g., Abhishikth & Deepthi"
                       className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
                     />
                     {errors.coupleNames && (
@@ -454,26 +401,26 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
 
                   <div>
                     <label
-                      htmlFor="couple-email"
+                      htmlFor="couple-contact"
                       className="block text-xs font-medium text-[#141413] mb-1.5"
                     >
-                      Email Address *
+                      Email, Phone, or Instagram Handle *
                     </label>
                     <input
-                      id="couple-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="clara.matteo@example.com"
+                      id="couple-contact"
+                      type="text"
+                      value={contactInfo}
+                      onChange={(e) => setContactInfo(e.target.value)}
+                      placeholder="e.g., @mende_deepthi or email@example.com"
                       className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
                     />
-                    {errors.email && (
+                    {errors.contactInfo && (
                       <p
                         role="alert"
                         className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
                       >
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                        <span>{errors.email}</span>
+                        <span>{errors.contactInfo}</span>
                       </p>
                     )}
                   </div>
@@ -510,14 +457,14 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       htmlFor="venue-location"
                       className="block text-xs font-medium text-[#141413] mb-1.5"
                     >
-                      Venue &amp; Destination *
+                      Event Location *
                     </label>
                     <input
                       id="venue-location"
                       type="text"
                       value={venueLocation}
                       onChange={(e) => setVenueLocation(e.target.value)}
-                      placeholder="e.g., Villa Cimbrone, Ravello"
+                      placeholder="e.g., Hyderabad, Mallika Gardens Shamshabad, Gandipet, or Nellore City"
                       className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
                     />
                     {errors.venueLocation && (
@@ -537,38 +484,40 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                     htmlFor="vision-notes"
                     className="block text-xs font-medium text-[#141413] mb-1.5"
                   >
-                    Celebration Narrative &amp; Lighting Vision *
+                    Event Details &amp; Favourite @light_of_love__ Series *
                   </label>
                   <textarea
                     id="vision-notes"
                     rows={4}
-                    value={visionNotes}
-                    onChange={(e) => setVisionNotes(e.target.value)}
-                    placeholder="Share the atmosphere of your celebration, architectural setting, and what draws you to analog wedding photography..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Share details about your Christian wedding, couple shoot, Haldi celebration, bridal portraits, or saree ceremony..."
                     className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
                   />
-                  {errors.visionNotes && (
+                  {errors.notes && (
                     <p
                       role="alert"
                       className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
                     >
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                      <span>{errors.visionNotes}</span>
+                      <span>{errors.notes}</span>
                     </p>
                   )}
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="text-xs text-[#57534E]">
-                    Configuring <strong className="text-[#141413]">{activeCollection.name}</strong>{' '}
-                    (${estimate.totalInvestment.toLocaleString()})
+                  <div className="text-xs text-[#57534E] font-mono">
+                    Selected:{' '}
+                    <strong className="text-[#141413]">
+                      {summary.selectedCount} Celebration Series
+                    </strong>
                   </div>
 
                   <button
                     type="submit"
                     className="px-6 py-3.5 text-sm font-medium bg-[#141413] text-[#FAF8F5] rounded-lg hover:bg-[#2C2A28] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                   >
-                    Submit Commission Inquiry
+                    Submit Inquiry to {STUDIO_INFO.name}
                   </button>
                 </div>
               </form>

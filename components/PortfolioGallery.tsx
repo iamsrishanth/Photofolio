@@ -14,7 +14,7 @@ import {
 import { GALLERY_WORKS, STUDIO_INFO } from '@/lib/portfolio-data';
 import {
   filterAndSortGallery,
-  formatExifSummary,
+  formatCaptureCredit,
   type GalleryCategory,
   type GalleryViewMode,
   type SortMode,
@@ -31,11 +31,11 @@ interface PortfolioGalleryProps {
 
 const CATEGORIES: { id: GalleryCategory; label: string }[] = [
   { id: 'all', label: 'All Works' },
-  { id: 'ceremony', label: 'Ceremony' },
-  { id: 'editorial', label: 'Editorial Portraits' },
-  { id: 'elopement', label: 'Elopements' },
-  { id: 'details', label: 'Still Life & Details' },
-  { id: 'analog', label: '35mm & Analog' },
+  { id: 'christian-wedding', label: 'Christian Wedding' },
+  { id: 'couple-portraits', label: 'Couple Shoot' },
+  { id: 'haldi', label: 'Haldi Celebrations' },
+  { id: 'bridal', label: 'Bridal Portraits' },
+  { id: 'saree-ceremony', label: 'Saree Ceremony' },
 ];
 
 export function PortfolioGallery({
@@ -85,7 +85,7 @@ export function PortfolioGallery({
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] mb-3">
-              <span>01. Curated Visual Archive</span>
+              <span>01. @light_of_love__ Visual Archive</span>
               <span aria-hidden="true">·</span>
               <a
                 href={STUDIO_INFO.instagramUrl}
@@ -98,19 +98,20 @@ export function PortfolioGallery({
               </a>
               <span aria-hidden="true">·</span>
               <span className="font-mono tabular-nums">
-                Showing {filteredWorks.length} of {GALLERY_WORKS.length} Plates
+                Showing {filteredWorks.length} of {GALLERY_WORKS.length} Frames
               </span>
             </div>
             <h2
               className="font-serif text-3xl sm:text-5xl text-[#141413] tracking-tight"
               style={{ textWrap: 'balance' }}
             >
-              Selected Wedding Works &amp; Film Studies
+              Wedding &amp; Celebration Frames
             </h2>
           </div>
 
           <p className="text-sm sm:text-base text-[#44403C] max-w-md leading-relaxed">
-            Explore our dynamic wedding portfolio curated from{' '}
+            Every photograph, caption, location, and camera credit below is sourced
+            directly from{' '}
             <a
               href={STUDIO_INFO.instagramUrl}
               target="_blank"
@@ -119,8 +120,8 @@ export function PortfolioGallery({
             >
               @light_of_love__
             </a>
-            . Switch between editorial Bento layouts, monograph masonry, or the full
-            technical archive index.
+            . Switch between editorial Bento layouts, monograph masonry, or the
+            complete post index.
           </p>
         </div>
 
@@ -217,8 +218,8 @@ export function PortfolioGallery({
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by location, couple, Leica lens, or Kodak film..."
-                aria-label="Search gallery works by location, couple, or film stock"
+                placeholder="Search Hyderabad, Shamshabad, Gandipet, Nellore, couple, or camera..."
+                aria-label="Search gallery works by location, couple, camera, or Instagram tag"
                 className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-[#D6D0C6] rounded-lg text-[#141413] placeholder:text-[#78716C] focus:outline-none focus:border-[#141413]"
               />
             </div>
@@ -240,7 +241,7 @@ export function PortfolioGallery({
                     onlySaved || savedIds.length > 0 ? 'fill-current' : ''
                   }`}
                 />
-                <span className="tabular-nums">Moodboard ({savedIds.length})</span>
+                <span className="tabular-nums">Saved Frames ({savedIds.length})</span>
               </button>
 
               {/* Sort Select */}
@@ -252,9 +253,9 @@ export function PortfolioGallery({
                   aria-label="Sort gallery works"
                   className="px-3 py-2 text-xs font-medium bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413] cursor-pointer"
                 >
-                  <option value="featured">Curated Order</option>
-                  <option value="latest">Latest Season</option>
-                  <option value="film-sequence">Frame Number</option>
+                  <option value="featured">Curated Mix</option>
+                  <option value="post-group">By Instagram Carousel</option>
+                  <option value="frame-sequence">Frame Sequence (01–23)</option>
                 </select>
               </label>
             </div>
@@ -265,11 +266,11 @@ export function PortfolioGallery({
         {filteredWorks.length === 0 ? (
           <div className="py-20 px-6 text-center rounded-2xl border border-[#E6E1DA] bg-[#F5F2EC]">
             <p className="font-serif text-2xl text-[#141413] mb-2">
-              No monograph plates match your current selection.
+              No @light_of_love__ frames match your current filter.
             </p>
             <p className="text-sm text-[#57534E] max-w-md mx-auto mb-6">
               {onlySaved && savedIds.length === 0
-                ? 'Your personal moodboard is currently empty. Click the heart icon on any photograph to curate your favorite wedding frames.'
+                ? 'Your saved frames list is currently empty. Click the heart icon on any photograph to save your favorite moments.'
                 : 'Try clearing your search query or switching back to All Works.'}
             </p>
             <button
@@ -286,23 +287,22 @@ export function PortfolioGallery({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             {filteredWorks.map((work, index) => {
               const isSaved = savedIds.includes(work.id);
-              // Asymmetric editorial Bento spans on desktop
               const patternIndex = index % 6;
               let colSpanClass = 'lg:col-span-4';
-              let heightClass = 'h-[380px] sm:h-[420px]';
+              let heightClass = 'h-[400px] sm:h-[440px]';
 
               if (patternIndex === 0) {
                 colSpanClass = 'md:col-span-2 lg:col-span-7';
-                heightClass = 'h-[420px] sm:h-[520px]';
+                heightClass = 'h-[440px] sm:h-[540px]';
               } else if (patternIndex === 1) {
                 colSpanClass = 'lg:col-span-5';
-                heightClass = 'h-[420px] sm:h-[520px]';
+                heightClass = 'h-[440px] sm:h-[540px]';
               } else if (patternIndex === 2 || patternIndex === 3 || patternIndex === 4) {
                 colSpanClass = 'lg:col-span-4';
-                heightClass = 'h-[380px] sm:h-[430px]';
+                heightClass = 'h-[400px] sm:h-[460px]';
               } else if (patternIndex === 5) {
                 colSpanClass = 'md:col-span-2 lg:col-span-12';
-                heightClass = 'h-[400px] sm:h-[480px]';
+                heightClass = 'h-[420px] sm:h-[520px]';
               }
 
               return (
@@ -315,13 +315,13 @@ export function PortfolioGallery({
                       src={work.image}
                       alt={`${work.title} — ${work.couple} (${work.location})`}
                       containerClassName="w-full h-full relative overflow-hidden bg-[#E5DFD5]"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
                       frameLabel={work.frameNumber}
                       subtitle={work.location}
                     />
 
                     {/* Measured Contrast Scrim */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
 
                     {/* Top Right Interactive Controls */}
                     <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
@@ -330,8 +330,8 @@ export function PortfolioGallery({
                         onClick={() => onToggleSave(work.id)}
                         aria-label={
                           isSaved
-                            ? `Remove ${work.title} from moodboard`
-                            : `Save ${work.title} to moodboard`
+                            ? `Remove ${work.title} from saved frames`
+                            : `Save ${work.title} to saved frames`
                         }
                         className={`w-9 h-9 inline-flex items-center justify-center rounded-lg backdrop-blur-sm transition-colors cursor-pointer ${
                           isSaved
@@ -351,7 +351,7 @@ export function PortfolioGallery({
                         className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/55 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                       >
                         <Maximize2 className="w-3.5 h-3.5" />
-                        <span>View Plate</span>
+                        <span>View Frame</span>
                       </button>
                     </div>
 
@@ -360,7 +360,7 @@ export function PortfolioGallery({
                       <div className="flex flex-wrap items-center gap-2 text-xs text-stone-200 font-mono tabular-nums mb-1">
                         <span>Frame {work.frameNumber}</span>
                         <span aria-hidden="true">·</span>
-                        <span className="capitalize">{work.category}</span>
+                        <span>{work.categoryLabel}</span>
                         <span aria-hidden="true">·</span>
                         <span>{work.location}</span>
                       </div>
@@ -373,25 +373,25 @@ export function PortfolioGallery({
                               onClick={() => onOpenLightbox(work, filteredWorks)}
                               className="text-left hover:underline underline-offset-4 cursor-pointer"
                             >
-                              {work.title}
+                              {work.couple}
                             </button>
                           </h3>
                           <p className="text-xs text-stone-200 mt-1 line-clamp-1">
-                            {work.couple} — {work.caption}
+                            {work.caption}
                           </p>
                         </div>
                       </div>
 
                       <div className="mt-3 pt-2.5 border-t border-white/20 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-stone-300 tabular-nums">
                         <span>
-                          {work.camera} · {work.filmStock}
+                          Captured on {work.capturedOn} · /p/{work.postShortcode} ({work.slideNumber}/{work.totalSlidesInPost})
                         </span>
                         <button
                           type="button"
                           onClick={() => onSelectStory(work.storyId)}
                           className="text-white hover:underline whitespace-nowrap shrink-0 cursor-pointer"
                         >
-                          Read Monograph →
+                          Open Series →
                         </button>
                       </div>
                     </div>
@@ -401,16 +401,12 @@ export function PortfolioGallery({
             })}
           </div>
         ) : viewMode === 'masonry' ? (
-          /* MODE 2: Editorial Monograph Masonry Grid (Unboxed Museum Captions Below Media) */
+          /* MODE 2: Editorial Monograph Masonry Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
             {filteredWorks.map((work) => {
               const isSaved = savedIds.includes(work.id);
               const aspectClass =
-                work.aspectRatio === 'portrait'
-                  ? 'aspect-[3/4]'
-                  : work.aspectRatio === 'square'
-                  ? 'aspect-square'
-                  : 'aspect-[4/3]';
+                work.aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-[3/2]';
 
               return (
                 <article key={work.id} className="flex flex-col group">
@@ -421,7 +417,7 @@ export function PortfolioGallery({
                       src={work.image}
                       alt={`${work.title} — ${work.couple}`}
                       containerClassName="w-full h-full relative overflow-hidden"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
                       frameLabel={work.frameNumber}
                       subtitle={work.location}
                     />
@@ -431,8 +427,8 @@ export function PortfolioGallery({
                         onClick={() => onToggleSave(work.id)}
                         aria-label={
                           isSaved
-                            ? `Remove ${work.title} from moodboard`
-                            : `Save ${work.title} to moodboard`
+                            ? `Remove ${work.title} from saved frames`
+                            : `Save ${work.title} to saved frames`
                         }
                         className={`w-8 h-8 inline-flex items-center justify-center rounded-lg backdrop-blur-sm transition-colors cursor-pointer ${
                           isSaved
@@ -455,9 +451,9 @@ export function PortfolioGallery({
 
                   {/* Clean Unboxed Monograph Caption */}
                   <div className="flex items-center gap-2 text-xs text-[#57534E] font-mono tabular-nums mb-1">
-                    <span>Plate {work.frameNumber}</span>
+                    <span>Frame {work.frameNumber}</span>
                     <span aria-hidden="true">·</span>
-                    <span>{work.couple}</span>
+                    <span>/p/{work.postShortcode}</span>
                     <span aria-hidden="true">·</span>
                     <span>{work.location}</span>
                   </div>
@@ -472,12 +468,12 @@ export function PortfolioGallery({
                     </button>
                   </h3>
 
-                  <p className="text-sm text-[#44403C] leading-relaxed mb-3">
+                  <p className="text-sm text-[#44403C] leading-relaxed mb-3 line-clamp-2">
                     {work.caption}
                   </p>
 
                   <div className="mt-auto pt-3 border-t border-[#E6E1DA] flex items-center justify-between gap-2 text-xs font-mono text-[#78716C] tabular-nums">
-                    <span className="truncate">{formatExifSummary(work)}</span>
+                    <span className="truncate">{formatCaptureCredit(work)}</span>
                   </div>
                 </article>
               );
@@ -516,7 +512,7 @@ export function PortfolioGallery({
                           <span aria-hidden="true">·</span>
                           <span>{work.location}</span>
                           <span aria-hidden="true">·</span>
-                          <span className="font-mono">{work.filmStock}</span>
+                          <span className="font-mono">{work.capturedOn}</span>
                         </div>
                       </div>
                     </div>
@@ -527,8 +523,8 @@ export function PortfolioGallery({
                         onClick={() => onToggleSave(work.id)}
                         aria-label={
                           isSaved
-                            ? `Remove ${work.title} from moodboard`
-                            : `Save ${work.title} to moodboard`
+                            ? `Remove ${work.title} from saved frames`
+                            : `Save ${work.title} to saved frames`
                         }
                         className="px-2.5 py-1.5 text-xs border border-[#D6D0C6] rounded-md hover:bg-white transition-colors cursor-pointer"
                       >
@@ -537,10 +533,10 @@ export function PortfolioGallery({
                       <button
                         type="button"
                         onClick={() => onOpenLightbox(work, filteredWorks)}
-                        aria-label={`Open Plate ${work.frameNumber}: ${work.title}`}
+                        aria-label={`Open Frame ${work.frameNumber}: ${work.title}`}
                         className="px-3 py-1.5 text-xs font-medium bg-[#141413] text-[#FAF8F5] rounded-md hover:bg-[#2C2A28] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                       >
-                        Open Plate
+                        Open Frame
                       </button>
                     </div>
                   </div>
@@ -555,17 +551,17 @@ export function PortfolioGallery({
                   src={activeIndexPreviewWork.image}
                   alt={activeIndexPreviewWork.title}
                   containerClassName="w-full h-full relative overflow-hidden"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   frameLabel={activeIndexPreviewWork.frameNumber}
                   subtitle={activeIndexPreviewWork.location}
                 />
               </div>
               <div className="flex items-center gap-2 text-xs font-mono text-[#57534E] tabular-nums mb-1">
-                <span>Plate {activeIndexPreviewWork.frameNumber}</span>
+                <span>Frame {activeIndexPreviewWork.frameNumber}</span>
                 <span aria-hidden="true">·</span>
-                <span>{activeIndexPreviewWork.date}</span>
+                <span>/p/{activeIndexPreviewWork.postShortcode}</span>
                 <span aria-hidden="true">·</span>
-                <span>{activeIndexPreviewWork.instagramCode}</span>
+                <span>{activeIndexPreviewWork.dimensions}</span>
               </div>
               <h3 className="font-serif text-2xl text-[#141413] mb-2">
                 {activeIndexPreviewWork.title}
@@ -574,7 +570,7 @@ export function PortfolioGallery({
                 {activeIndexPreviewWork.caption}
               </p>
               <div className="pt-3 border-t border-[#E6E1DA] text-[11px] font-mono text-[#57534E] tabular-nums">
-                {formatExifSummary(activeIndexPreviewWork)}
+                {formatCaptureCredit(activeIndexPreviewWork)}
               </div>
             </div>
           </div>

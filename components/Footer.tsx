@@ -17,8 +17,9 @@ export function Footer({ onNavigate }: FooterProps) {
             <div className="font-serif text-3xl text-[#141413] tracking-tight mb-2">
               {STUDIO_INFO.name}
             </div>
-            <p className="text-xs sm:text-sm text-[#57534E] max-w-md">
-              {STUDIO_INFO.tagline} · {STUDIO_INFO.locations}
+            <p className="text-xs sm:text-sm text-[#57534E] font-mono max-w-md">
+              {STUDIO_INFO.badgeText} · {STUDIO_INFO.filmsHandle} ·{' '}
+              {STUDIO_INFO.locations}
             </p>
           </div>
 
@@ -28,21 +29,21 @@ export function Footer({ onNavigate }: FooterProps) {
               onClick={() => onNavigate('portfolio')}
               className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
             >
-              Portfolio
+              Gallery (23)
             </button>
             <button
               type="button"
               onClick={() => onNavigate('monographs')}
               className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
             >
-              Monographs
+              Carousels (5)
             </button>
             <button
               type="button"
-              onClick={() => onNavigate('collections')}
+              onClick={() => onNavigate('atelier')}
               className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
             >
-              Collections
+              Profile
             </button>
             <button
               type="button"
@@ -63,13 +64,14 @@ export function Footer({ onNavigate }: FooterProps) {
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#78716C]">
+        <div className="pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#78716C] font-mono">
           <div>
-            © {new Date().getFullYear()} {STUDIO_INFO.name} Studio. All rights
-            reserved.
+            © {new Date().getFullYear()} {STUDIO_INFO.name} (
+            {STUDIO_INFO.instagramHandle}).
           </div>
           <div>
-            Editorial Wedding Photography · 35mm &amp; Medium Format Analog Archive
+            {STUDIO_INFO.postsCount} Posts · {STUDIO_INFO.followersCount} Followers ·{' '}
+            {STUDIO_INFO.cameraSystems}
           </div>
         </div>
       </div>

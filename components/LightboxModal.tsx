@@ -9,10 +9,9 @@ import {
   ArrowUpRight,
   BookOpen,
 } from 'lucide-react';
-import { STUDIO_INFO } from '@/lib/portfolio-data';
 import {
   getAdjacentWorkIndex,
-  formatExifSummary,
+  formatCaptureCredit,
   type GalleryWork,
 } from '@/lib/portfolio-logic';
 import { EditorialImage } from './EditorialImage';
@@ -91,17 +90,19 @@ export function LightboxModal({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={`Fullscreen plate inspection: ${work.title}`}
+      aria-label={`Fullscreen frame inspection: ${work.title}`}
       className="fixed inset-0 z-50 bg-[#0A0A0A]/95 backdrop-blur-md text-[#FAF8F5] flex flex-col justify-between overflow-y-auto"
     >
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-4 px-5 sm:px-8 py-4 border-b border-white/10">
         <div className="flex items-center gap-2 text-xs font-mono text-stone-300 tabular-nums">
           <span>
-            Plate {work.frameNumber} ({currentIndex + 1} of {worksList.length})
+            Frame {work.frameNumber} ({currentIndex + 1} of {worksList.length})
           </span>
           <span aria-hidden="true">·</span>
-          <span>{work.couple}</span>
+          <span>
+            Post /p/{work.postShortcode} (Slide {work.slideNumber}/{work.totalSlidesInPost})
+          </span>
           <span aria-hidden="true">·</span>
           <span className="hidden sm:inline">{work.location}</span>
         </div>
@@ -167,51 +168,67 @@ export function LightboxModal({
           </button>
         </div>
 
-        {/* Monograph Plate Metadata & Narrative */}
+        {/* Authentic Instagram Post Metadata & Verbatim Caption */}
         <div className="lg:col-span-4 flex flex-col justify-between space-y-6">
           <div>
             <div className="flex items-center gap-2 text-xs text-stone-400 font-mono tabular-nums mb-2">
-              <span>{work.date}</span>
+              <span>{work.instagramHandle}</span>
               <span aria-hidden="true">·</span>
-              <span className="capitalize">{work.category}</span>
+              <span>/p/{work.postShortcode}</span>
               <span aria-hidden="true">·</span>
-              <span>{work.country}</span>
+              <span>{work.dimensions}</span>
             </div>
 
             <h2 className="font-serif text-3xl sm:text-4xl text-white tracking-tight mb-3">
               {work.title}
             </h2>
 
-            <p className="text-sm text-stone-300 leading-relaxed mb-6">
-              {work.caption}
+            <p className="text-sm text-stone-300 leading-relaxed mb-6 font-serif italic">
+              “{work.caption}”
             </p>
 
-            {/* Technical Darkroom Notes */}
+            {/* Authentic Instagram Metadata */}
             <div className="border-t border-b border-white/15 py-4 space-y-2.5 text-xs">
               <div className="flex justify-between gap-4">
-                <span className="text-stone-400">Couple</span>
-                <span className="text-white font-medium">{work.couple}</span>
+                <span className="text-stone-400">Subject / Series</span>
+                <span className="text-white font-medium text-right">{work.couple}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-stone-400">Collaborator</span>
+                <span className="text-white font-mono text-right">
+                  {work.collaboratorHandle}
+                </span>
               </div>
               <div className="flex justify-between gap-4">
                 <span className="text-stone-400">Location</span>
-                <span className="text-white">{work.location}</span>
+                <span className="text-white text-right">{work.location}</span>
               </div>
               <div className="flex justify-between gap-4">
-                <span className="text-stone-400">Camera &amp; Lens</span>
-                <span className="text-white font-mono">
-                  {work.camera} · {work.lens}
+                <span className="text-stone-400">Camera Tag</span>
+                <span className="text-white font-mono text-right">{work.capturedOn}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-stone-400">Credited Team</span>
+                <span className="text-white font-mono text-right">{work.creditedBy}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-stone-400">Capture Summary</span>
+                <span className="text-white font-mono tabular-nums text-right">
+                  {formatCaptureCredit(work)}
                 </span>
               </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-stone-400">Film / Emulsion</span>
-                <span className="text-white font-mono">{work.filmStock}</span>
-              </div>
-              <div className="flex justify-between gap-4">
-                <span className="text-stone-400">Exposure</span>
-                <span className="text-white font-mono tabular-nums">
-                  {work.aperture} · {work.shutter} · ISO {work.iso}
+            </div>
+
+            {/* Hashtags */}
+            <div className="flex flex-wrap gap-1.5 mt-4">
+              {work.hashtags.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[11px] font-mono px-2 py-0.5 rounded bg-white/10 text-stone-300"
+                >
+                  {tag}
                 </span>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -225,17 +242,17 @@ export function LightboxModal({
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 text-xs font-medium bg-white text-[#0A0A0A] rounded-lg hover:bg-stone-200 transition-colors cursor-pointer"
             >
               <BookOpen className="w-4 h-4" />
-              <span>Open Full {work.couple} Monograph</span>
+              <span>Open Full /p/{work.postShortcode} Carousel ({work.totalSlidesInPost} Slides)</span>
             </button>
 
             <a
-              href={STUDIO_INFO.instagramUrl}
+              href={work.postUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-medium text-stone-300 border border-white/20 rounded-lg hover:text-white hover:border-white/40 transition-colors"
             >
               <span>
-                View on Instagram ({work.instagramHandle} · {work.instagramCode})
+                Open Post on Instagram ({work.instagramHandle} · /p/{work.postShortcode})
               </span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
@@ -253,7 +270,7 @@ export function LightboxModal({
                 key={item.id}
                 type="button"
                 onClick={() => onSelectWork(item)}
-                aria-label={`Select plate ${item.frameNumber}: ${item.title}`}
+                aria-label={`Select frame ${item.frameNumber}: ${item.title}`}
                 className={`relative w-16 h-12 rounded-md overflow-hidden shrink-0 border transition-opacity cursor-pointer ${
                   active
                     ? 'border-white opacity-100'

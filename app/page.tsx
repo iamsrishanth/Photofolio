@@ -13,7 +13,10 @@ import { Footer } from '@/components/Footer';
 import { LightboxModal } from '@/components/LightboxModal';
 
 export default function HomePage() {
-  const [savedIds, setSavedIds] = useState<string[]>(['lol-01', 'lol-03']);
+  const [savedIds, setSavedIds] = useState<string[]>([
+    'ig-DEmsPw9scgm-1',
+    'ig-DR8zWcOCBSn-1',
+  ]);
   const [activeStoryId, setActiveStoryId] = useState<string>(
     COUPLE_STORIES[0].id
   );
