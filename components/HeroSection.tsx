@@ -55,8 +55,13 @@ export function HeroSection({
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState(1);
   const [isTouchOrCoarse, setIsTouchOrCoarse] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const heroRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.matchMedia) {
@@ -84,7 +89,7 @@ export function HeroSection({
     const timer = window.setInterval(() => {
       setSlideDirection(1);
       setActiveSlideIndex((prev) => (prev + 1) % featuredWorks.length);
-    }, 3000);
+    }, 6000);
 
     return () => window.clearInterval(timer);
   }, [activeSlideIndex, featuredWorks.length]);
@@ -243,17 +248,33 @@ export function HeroSection({
                   >
                     <div className="p-3 sm:p-4 bg-[#FAF8F5] border border-[#E2DDD5] shadow-[0_18px_40px_-18px_rgba(20,20,19,0.18)]">
                       <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#EBE6DF]">
-                        <AnimatePresence initial={false} custom={slideDirection}>
-                          <motion.div
-                            key={primaryWork.id}
-                            custom={slideDirection}
-                            variants={slideVariants}
-                            initial="enter"
-                            animate="center"
-                            exit="exit"
-                            transition={slideTransition}
-                            className="absolute inset-0 w-full h-full"
-                          >
+                        {hasMounted && !prefersReducedMotion ? (
+                          <AnimatePresence initial={false} custom={slideDirection}>
+                            <motion.div
+                              key={primaryWork.id}
+                              custom={slideDirection}
+                              variants={slideVariants}
+                              initial="enter"
+                              animate="center"
+                              exit="exit"
+                              transition={slideTransition}
+                              className="absolute inset-0 w-full h-full"
+                            >
+                              <EditorialImage
+                                src={primaryWork.image}
+                                alt={`${primaryWork.couple} — ${primaryWork.categoryLabel} in ${primaryWork.shortLocation ?? primaryWork.location}`}
+                                focalPosition={
+                                  primaryWork.focalPosition ?? '50% 24%'
+                                }
+                                sizes="(max-width: 1024px) 100vw, 560px"
+                                priority
+                                containerClassName="w-full h-full relative overflow-hidden"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                              />
+                            </motion.div>
+                          </AnimatePresence>
+                        ) : (
+                          <div className="absolute inset-0 w-full h-full">
                             <EditorialImage
                               src={primaryWork.image}
                               alt={`${primaryWork.couple} — ${primaryWork.categoryLabel} in ${primaryWork.shortLocation ?? primaryWork.location}`}
@@ -263,10 +284,10 @@ export function HeroSection({
                               sizes="(max-width: 1024px) 100vw, 560px"
                               priority
                               containerClassName="w-full h-full relative overflow-hidden"
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                              className="w-full h-full object-cover"
                             />
-                          </motion.div>
-                        </AnimatePresence>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </button>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { GALLERY_WORKS, COUPLE_STORIES } from '@/lib/portfolio-data';
 import type { GalleryWork } from '@/lib/portfolio-logic';
 import { Navbar } from '@/components/Navbar';
@@ -8,9 +9,17 @@ import { HeroSection } from '@/components/HeroSection';
 import { PortfolioGallery } from '@/components/PortfolioGallery';
 import { CoupleMonographs } from '@/components/CoupleMonographs';
 import { AtelierEthosSection } from '@/components/AtelierEthosSection';
-import { CommissionSection } from '@/components/CommissionSection';
 import { Footer } from '@/components/Footer';
-import { LightboxModal } from '@/components/LightboxModal';
+
+const CommissionSection = dynamic(
+  () => import('@/components/CommissionSection').then((mod) => mod.CommissionSection),
+  { ssr: true }
+);
+
+const LightboxModal = dynamic(
+  () => import('@/components/LightboxModal').then((mod) => mod.LightboxModal),
+  { ssr: false }
+);
 
 export default function HomePage() {
   const [savedIds, setSavedIds] = useState<string[]>([
