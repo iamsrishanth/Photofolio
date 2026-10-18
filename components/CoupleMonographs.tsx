@@ -123,10 +123,10 @@ export function CoupleMonographs({
                 className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-medium border transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus ${
                   isSelected
                     ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
-                    : 'bg-[#FAF8F5] text-[#57534E] border-[#CFC8BC] hover:border-[#141413] hover:text-[#141413]'
+                    : 'bg-[#FAF8F5] text-[#44403C] border-[#CFC8BC] hover:border-[#141413] hover:text-[#141413]'
                 }`}
               >
-                <span className="font-mono text-[11px] opacity-75 mr-2 tabular-nums">
+                <span className={`font-mono text-[11px] mr-2 tabular-nums ${isSelected ? 'opacity-75' : 'text-[#57534E]'}`}>
                   {story.seriesNumber}
                 </span>
                 <span>{story.couple}</span>
@@ -198,7 +198,7 @@ export function CoupleMonographs({
                     onClick={(e) =>
                       onOpenLightbox(work, storyWorks, e.currentTarget)
                     }
-                    aria-label={`Open ${work.couple} photograph ${work.slideNumber} of ${work.totalSlidesInPost}`}
+                    aria-label={`0${work.slideNumber} — Open ${work.couple} photograph ${work.slideNumber} of ${work.totalSlidesInPost}`}
                     className="group text-left cursor-pointer editorial-focus"
                   >
                     <div className="relative aspect-[4/5] overflow-hidden border border-[#CFC8BC] bg-[#EBE6DF] mb-1">

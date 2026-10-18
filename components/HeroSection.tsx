@@ -181,7 +181,7 @@ export function HeroSection({
               <button
                 type="button"
                 onClick={(e) => onOpenLightbox(supportingWorkTwo, e.currentTarget)}
-                aria-label={`Open photograph: ${supportingWorkTwo.couple}, ${supportingWorkTwo.shortLocation ?? supportingWorkTwo.location}`}
+                aria-label={`${supportingWorkTwo.couple}, ${supportingWorkTwo.shortLocation ?? supportingWorkTwo.location} — Open photograph`}
                 className="w-full text-left group block cursor-pointer editorial-focus"
               >
                 <div className="p-2.5 bg-[#FAF8F5] border border-[#E2DDD5] shadow-[0_10px_28px_-14px_rgba(20,20,19,0.16)]">
@@ -282,7 +282,7 @@ export function HeroSection({
                     onClick={(e) =>
                       onOpenLightbox(supportingWorkOne, e.currentTarget)
                     }
-                    aria-label={`Open photograph: ${supportingWorkOne.couple}, ${supportingWorkOne.shortLocation ?? supportingWorkOne.location}`}
+                    aria-label={`${supportingWorkOne.couple}, ${supportingWorkOne.shortLocation ?? supportingWorkOne.location} — Open photograph`}
                     className="w-full text-left group block cursor-pointer editorial-focus"
                   >
                     <div className="p-2.5 bg-[#FAF8F5] border border-[#E2DDD5] shadow-[0_12px_30px_-14px_rgba(20,20,19,0.16)]">
@@ -370,7 +370,7 @@ export function HeroSection({
                     key={`mobile-slot-${idx}`}
                     type="button"
                     onClick={(e) => onOpenLightbox(work, e.currentTarget)}
-                    aria-label={`Open photograph: ${work.couple}, ${work.shortLocation ?? work.location}`}
+                    aria-label={`${work.couple}, ${work.shortLocation ?? work.location} — Open photograph`}
                     className="text-left group block cursor-pointer editorial-focus"
                   >
                     <div className="relative aspect-[3/4] w-full overflow-hidden border border-[#E2DDD5] bg-[#EBE6DF] mb-2">
