@@ -142,6 +142,7 @@ export function HeroSection({
                           supportingWorkTwo.focalPosition ?? '50% 24%'
                         }
                         sizes="300px"
+                        loading="eager"
                         containerClassName="w-full h-full relative overflow-hidden"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                       />
@@ -235,6 +236,7 @@ export function HeroSection({
                               supportingWorkOne.focalPosition ?? '50% 22%'
                             }
                             sizes="260px"
+                            loading="eager"
                             containerClassName="w-full h-full relative overflow-hidden"
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                           />

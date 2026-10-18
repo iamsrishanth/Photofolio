@@ -117,7 +117,7 @@ export function PortfolioGallery({
               : 'md:col-span-1 lg:col-span-6',
           aspect:
             first.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
-          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 60vw, 720px',
+          sizes: '(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 720px',
         });
         i += 1;
       } else if (useTwoCardSpread) {
@@ -142,7 +142,7 @@ export function PortfolioGallery({
           colSpan: firstSpan,
           aspect:
             first.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
-          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 55vw, 680px',
+          sizes: '(max-width: 640px) 92vw, (max-width: 1024px) 55vw, 680px',
         });
         map.set(second.id, {
           colSpan: secondSpan,
@@ -150,7 +150,7 @@ export function PortfolioGallery({
             second.aspectRatio === 'landscape'
               ? 'aspect-[3/2]'
               : 'aspect-[4/5]',
-          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 580px',
+          sizes: '(max-width: 640px) 92vw, (max-width: 1024px) 45vw, 580px',
         });
         i += 2;
       } else {
@@ -159,7 +159,7 @@ export function PortfolioGallery({
             colSpan: 'md:col-span-1 lg:col-span-4',
             aspect:
               w.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
-            sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 420px',
+            sizes: '(max-width: 640px) 92vw, (max-width: 1024px) 33vw, 420px',
           });
         });
         i += 3;
@@ -176,7 +176,7 @@ export function PortfolioGallery({
         colSpan: 'md:col-span-1 lg:col-span-4',
         aspect:
           work.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
-        sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 34vw, 420px',
+        sizes: '(max-width: 640px) 92vw, (max-width: 1024px) 34vw, 420px',
       }
     );
   };
@@ -507,7 +507,7 @@ export function PortfolioGallery({
                         src={work.image}
                         alt={`${work.couple} — ${work.categoryLabel} in ${work.shortLocation ?? work.location}`}
                         focalPosition={work.focalPosition ?? '50% 24%'}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 420px"
+                        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 420px"
                         containerClassName="w-full h-full relative overflow-hidden"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                         frameLabel={work.frameNumber}
