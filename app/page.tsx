@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { GALLERY_WORKS, COUPLE_STORIES } from '@/lib/portfolio-data';
 import type { GalleryWork } from '@/lib/portfolio-logic';
 import { Navbar } from '@/components/Navbar';
@@ -24,6 +24,8 @@ export default function HomePage() {
   const [lightboxList, setLightboxList] =
     useState<GalleryWork[]>(GALLERY_WORKS);
 
+  const lightboxTriggerRef = useRef<HTMLElement | null>(null);
+
   const scrollToSection = useCallback((sectionId: string) => {
     const el = document.getElementById(sectionId);
     if (el) {
@@ -40,12 +42,28 @@ export default function HomePage() {
   }, []);
 
   const handleOpenLightbox = useCallback(
-    (work: GalleryWork, currentList: GalleryWork[] = GALLERY_WORKS) => {
+    (
+      work: GalleryWork,
+      currentList: GalleryWork[] = GALLERY_WORKS,
+      triggerEl?: HTMLElement | null
+    ) => {
+      lightboxTriggerRef.current =
+        triggerEl ?? (document.activeElement as HTMLElement | null);
       setLightboxList(currentList.length > 0 ? currentList : GALLERY_WORKS);
       setLightboxWork(work);
     },
     []
   );
+
+  const handleCloseLightbox = useCallback(() => {
+    setLightboxWork(null);
+    const triggerEl = lightboxTriggerRef.current;
+    if (triggerEl && typeof triggerEl.focus === 'function') {
+      window.setTimeout(() => {
+        triggerEl.focus();
+      }, 10);
+    }
+  }, []);
 
   const handleSelectStory = useCallback((storyId: string) => {
     setActiveStoryId(storyId);
@@ -55,15 +73,20 @@ export default function HomePage() {
     }
   }, []);
 
+  const isModalOpen = Boolean(lightboxWork);
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-[#141413]">
-      <Navbar onNavigate={scrollToSection} />
+      <Navbar onNavigate={scrollToSection} inert={isModalOpen} />
 
-      <main className="flex-1">
+      <main inert={isModalOpen || undefined} className="flex-1">
         <HeroSection
           onExplorePortfolio={() => scrollToSection('portfolio')}
           onExploreStories={() => scrollToSection('monographs')}
-          onOpenLightbox={(work) => handleOpenLightbox(work, GALLERY_WORKS)}
+          onInquire={() => scrollToSection('commission')}
+          onOpenLightbox={(work, triggerEl) =>
+            handleOpenLightbox(work, GALLERY_WORKS, triggerEl)
+          }
         />
 
         <PortfolioGallery
@@ -84,13 +107,13 @@ export default function HomePage() {
         <CommissionSection savedIds={savedIds} />
       </main>
 
-      <Footer onNavigate={scrollToSection} />
+      <Footer onNavigate={scrollToSection} inert={isModalOpen} />
 
       <LightboxModal
         work={lightboxWork}
         worksList={lightboxList}
         savedIds={savedIds}
-        onClose={() => setLightboxWork(null)}
+        onClose={handleCloseLightbox}
         onSelectWork={setLightboxWork}
         onToggleSave={handleToggleSave}
         onOpenStory={handleSelectStory}

@@ -6,73 +6,84 @@ import { STUDIO_INFO } from '@/lib/portfolio-data';
 
 interface FooterProps {
   onNavigate: (sectionId: string) => void;
+  inert?: boolean;
 }
 
-export function Footer({ onNavigate }: FooterProps) {
+export function Footer({ onNavigate, inert = false }: FooterProps) {
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string
+  ) => {
+    e.preventDefault();
+    onNavigate(sectionId);
+  };
+
   return (
-    <footer className="w-full bg-[#FAF8F5] text-[#141413] py-12 sm:py-16">
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-[#E6E1DA]">
+    <footer
+      inert={inert || undefined}
+      className="w-full bg-[#FAF8F5] text-[#141413] py-12 sm:py-16"
+    >
+      <div className="editorial-container">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-[#E2DDD5]">
           <div>
             <div className="font-serif text-3xl text-[#141413] tracking-tight mb-2">
               {STUDIO_INFO.name}
             </div>
-            <p className="text-xs sm:text-sm text-[#57534E] font-mono max-w-md">
-              {STUDIO_INFO.badgeText} · {STUDIO_INFO.filmsHandle} ·{' '}
-              {STUDIO_INFO.locations}
+            <p className="text-xs sm:text-sm text-[#57534E] max-w-md">
+              Wedding and celebration photography across {STUDIO_INFO.locations}.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 text-xs sm:text-sm font-medium text-[#44403C]">
-            <button
-              type="button"
-              onClick={() => onNavigate('portfolio')}
-              className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
+          <nav
+            aria-label="Footer navigation"
+            className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm font-medium text-[#57534E]"
+          >
+            <a
+              href="#portfolio"
+              onClick={(e) => handleNavClick(e, 'portfolio')}
+              className="min-h-[44px] inline-flex items-center hover:text-[#141413] hover:underline underline-offset-4 editorial-focus"
             >
-              Gallery (23)
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('monographs')}
-              className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
+              Work
+            </a>
+            <a
+              href="#monographs"
+              onClick={(e) => handleNavClick(e, 'monographs')}
+              className="min-h-[44px] inline-flex items-center hover:text-[#141413] hover:underline underline-offset-4 editorial-focus"
             >
-              Carousels (5)
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('atelier')}
-              className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
+              Stories
+            </a>
+            <a
+              href="#atelier"
+              onClick={(e) => handleNavClick(e, 'atelier')}
+              className="min-h-[44px] inline-flex items-center hover:text-[#141413] hover:underline underline-offset-4 editorial-focus"
             >
-              Profile
-            </button>
-            <button
-              type="button"
-              onClick={() => onNavigate('commission')}
-              className="hover:text-[#141413] hover:underline underline-offset-4 cursor-pointer"
+              Our Approach
+            </a>
+            <a
+              href="#commission"
+              onClick={(e) => handleNavClick(e, 'commission')}
+              className="min-h-[44px] inline-flex items-center hover:text-[#141413] hover:underline underline-offset-4 editorial-focus"
             >
               Inquire
-            </button>
+            </a>
             <a
               href={STUDIO_INFO.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[#141413] hover:underline underline-offset-4"
+              className="min-h-[44px] inline-flex items-center gap-1 text-[#141413] hover:text-[#53614A] hover:underline underline-offset-4 editorial-focus"
             >
               <span>Instagram ({STUDIO_INFO.instagramHandle})</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </a>
-          </div>
+          </nav>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#78716C] font-mono">
+        <div className="pt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#57534E]">
           <div>
             © {new Date().getFullYear()} {STUDIO_INFO.name} (
             {STUDIO_INFO.instagramHandle}).
           </div>
-          <div>
-            {STUDIO_INFO.postsCount} Posts · {STUDIO_INFO.followersCount} Followers ·{' '}
-            {STUDIO_INFO.cameraSystems}
-          </div>
+          <div>{STUDIO_INFO.filmsHandle}</div>
         </div>
       </div>
     </footer>

@@ -37,6 +37,10 @@ export interface GalleryWork {
   hashtags: string[];
   storyId: string;
   featuredOrder: number;
+  width?: number;
+  height?: number;
+  focalPosition?: string;
+  shortLocation?: string;
 }
 
 export interface InstagramSeriesStory {
@@ -49,6 +53,7 @@ export interface InstagramSeriesStory {
   collaboratorUrl: string;
   eventType: string;
   location: string;
+  shortLocation?: string;
   locationUrl: string;
   capturedOn: string;
   creditedBy: string;
@@ -56,6 +61,10 @@ export interface InstagramSeriesStory {
   coverImage: string;
   secondaryImage: string;
   thirdImage: string;
+  coverFocalPosition?: string;
+  secondaryFocalPosition?: string;
+  thirdFocalPosition?: string;
+  factualIntro?: string;
   exactCaption: string;
   hashtags: string[];
   slidesSummary: { slide: string; frameTitle: string; dimensions: string }[];
@@ -208,7 +217,7 @@ export function validateInquiryForm(input: InquiryFormInput): InquiryValidationR
   }
 
   if (!input.venueLocation || input.venueLocation.trim().length < 3) {
-    errors.venueLocation = 'Please enter the venue or city (e.g., Hyderabad, Shamshabad, Gandipet, Nellore).';
+    errors.venueLocation = 'Please enter the venue or city (e.g., Hyderabad and Beyond).';
   }
 
   if (!input.selectedEvents || input.selectedEvents.length === 0) {

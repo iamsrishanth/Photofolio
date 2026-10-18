@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   Search,
   Heart,
-  Maximize2,
-  LayoutGrid,
-  Columns,
-  List,
   RotateCcw,
   ArrowUpRight,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { GALLERY_WORKS, STUDIO_INFO } from '@/lib/portfolio-data';
+import { GALLERY_WORKS } from '@/lib/portfolio-data';
 import {
   filterAndSortGallery,
   formatCaptureCredit,
@@ -25,17 +23,27 @@ import { EditorialImage } from './EditorialImage';
 interface PortfolioGalleryProps {
   savedIds: string[];
   onToggleSave: (workId: string) => void;
-  onOpenLightbox: (work: GalleryWork, currentList: GalleryWork[]) => void;
+  onOpenLightbox: (
+    work: GalleryWork,
+    currentList: GalleryWork[],
+    triggerEl?: HTMLElement | null
+  ) => void;
   onSelectStory: (storyId: string) => void;
 }
 
 const CATEGORIES: { id: GalleryCategory; label: string }[] = [
-  { id: 'all', label: 'All Works' },
+  { id: 'all', label: 'All Work' },
   { id: 'christian-wedding', label: 'Christian Wedding' },
-  { id: 'couple-portraits', label: 'Couple Shoot' },
+  { id: 'couple-portraits', label: 'Couple Portraits' },
   { id: 'haldi', label: 'Haldi Celebrations' },
   { id: 'bridal', label: 'Bridal Portraits' },
   { id: 'saree-ceremony', label: 'Saree Ceremony' },
+];
+
+const VIEW_MODES: { id: GalleryViewMode; label: string }[] = [
+  { id: 'bento', label: 'Editorial' },
+  { id: 'masonry', label: 'Masonry' },
+  { id: 'index', label: 'Index' },
 ];
 
 export function PortfolioGallery({
@@ -49,9 +57,10 @@ export function PortfolioGallery({
   const [sortBy, setSortBy] = useState<SortMode>('featured');
   const [searchQuery, setSearchQuery] = useState('');
   const [onlySaved, setOnlySaved] = useState(false);
-  const [hoveredIndexWorkId, setHoveredIndexWorkId] = useState<string>(
+  const [activeIndexWorkId, setActiveIndexWorkId] = useState<string>(
     GALLERY_WORKS[0].id
   );
+  const shouldReduceMotion = useReducedMotion();
 
   const filteredWorks = useMemo(() => {
     return filterAndSortGallery(GALLERY_WORKS, {
@@ -71,448 +80,603 @@ export function PortfolioGallery({
   };
 
   const activeIndexPreviewWork =
-    filteredWorks.find((w) => w.id === hoveredIndexWorkId) ??
+    filteredWorks.find((w) => w.id === activeIndexWorkId) ??
     filteredWorks[0] ??
     GALLERY_WORKS[0];
+
+  const editorialLayoutMap = useMemo(() => {
+    const map = new Map<
+      string,
+      { colSpan: string; aspect: string; sizes: string }
+    >();
+    let i = 0;
+    let rowIndex = 0;
+
+    while (i < filteredWorks.length) {
+      const remaining = filteredWorks.length - i;
+      const first = filteredWorks[i];
+      const second = filteredWorks[i + 1];
+      const third = filteredWorks[i + 2];
+
+      const hasLandscapeInNextTwo =
+        first?.aspectRatio === 'landscape' ||
+        second?.aspectRatio === 'landscape';
+      const hasHeroInNextTwo =
+        first?.bentoSpan === 'hero' || second?.bentoSpan === 'hero';
+
+      const useTwoCardSpread =
+        remaining === 2 ||
+        hasLandscapeInNextTwo ||
+        hasHeroInNextTwo ||
+        rowIndex % 2 === 0 ||
+        third?.aspectRatio === 'landscape';
+
+      if (remaining === 1) {
+        map.set(first.id, {
+          colSpan:
+            first.aspectRatio === 'landscape'
+              ? 'md:col-span-2 lg:col-span-8'
+              : 'md:col-span-1 lg:col-span-6',
+          aspect:
+            first.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
+          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 60vw, 720px',
+        });
+        i += 1;
+      } else if (useTwoCardSpread) {
+        let firstSpan = 'md:col-span-1 lg:col-span-6';
+        let secondSpan = 'md:col-span-1 lg:col-span-6';
+
+        if (
+          first.aspectRatio === 'landscape' &&
+          second.aspectRatio === 'portrait'
+        ) {
+          firstSpan = 'md:col-span-1 lg:col-span-7';
+          secondSpan = 'md:col-span-1 lg:col-span-5';
+        } else if (
+          first.aspectRatio === 'portrait' &&
+          second.aspectRatio === 'landscape'
+        ) {
+          firstSpan = 'md:col-span-1 lg:col-span-5';
+          secondSpan = 'md:col-span-1 lg:col-span-7';
+        }
+
+        map.set(first.id, {
+          colSpan: firstSpan,
+          aspect:
+            first.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
+          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 55vw, 680px',
+        });
+        map.set(second.id, {
+          colSpan: secondSpan,
+          aspect:
+            second.aspectRatio === 'landscape'
+              ? 'aspect-[3/2]'
+              : 'aspect-[4/5]',
+          sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 45vw, 580px',
+        });
+        i += 2;
+      } else {
+        [first, second, third].forEach((w) => {
+          map.set(w.id, {
+            colSpan: 'md:col-span-1 lg:col-span-4',
+            aspect:
+              w.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
+            sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 33vw, 420px',
+          });
+        });
+        i += 3;
+      }
+      rowIndex += 1;
+    }
+
+    return map;
+  }, [filteredWorks]);
+
+  const getEditorialGridClasses = (work: GalleryWork) => {
+    return (
+      editorialLayoutMap.get(work.id) ?? {
+        colSpan: 'md:col-span-1 lg:col-span-4',
+        aspect:
+          work.aspectRatio === 'landscape' ? 'aspect-[3/2]' : 'aspect-[4/5]',
+        sizes: '(max-width: 768px) 100vw, (max-width: 1280px) 34vw, 420px',
+      }
+    );
+  };
 
   return (
     <section
       id="portfolio"
-      className="scroll-mt-20 w-full py-16 sm:py-24 bg-[#FAF8F5] text-[#141413] border-b border-[#E6E1DA]"
+      aria-labelledby="portfolio-heading"
+      className="scroll-mt-20 w-full py-12 sm:py-16 lg:py-20 bg-[#FAF8F5] text-[#141413] border-b border-[#E2DDD5]"
     >
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8">
-        {/* Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Heading */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] mb-3">
-              <span>01. @light_of_love__ Visual Archive</span>
-              <span aria-hidden="true">·</span>
-              <a
-                href={STUDIO_INFO.instagramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[#141413] underline underline-offset-4 hover:text-[#78716C]"
-              >
-                <span>{STUDIO_INFO.instagramHandle}</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
-              <span aria-hidden="true">·</span>
-              <span className="font-mono tabular-nums">
-                Showing {filteredWorks.length} of {GALLERY_WORKS.length} Frames
-              </span>
-            </div>
+            <p className="font-mono text-xs text-[#53614A] mb-2">01 / Selected Work</p>
             <h2
+              id="portfolio-heading"
               className="font-serif text-3xl sm:text-5xl text-[#141413] tracking-tight"
               style={{ textWrap: 'balance' }}
             >
-              Wedding &amp; Celebration Frames
+              Photographs &amp; Archive
             </h2>
           </div>
 
-          <p className="text-sm sm:text-base text-[#44403C] max-w-md leading-relaxed">
-            Every photograph, caption, location, and camera credit below is sourced
-            directly from{' '}
-            <a
-              href={STUDIO_INFO.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-[#141413] underline underline-offset-4"
-            >
-              @light_of_love__
-            </a>
-            . Switch between editorial Bento layouts, monograph masonry, or the
-            complete post index.
+          <p className="text-sm sm:text-base text-[#57534E] max-w-md leading-relaxed">
+            Twenty-three photographs from weddings and family celebrations across
+            Hyderabad and Beyond.
           </p>
         </div>
 
-        {/* Interactive Toolbar: Row 1 (Category Tabs + View Switcher), Row 2 (Search + Moodboard + Sort) */}
-        <div className="flex flex-col gap-4 pb-8 mb-10 border-b border-[#E6E1DA]">
-          {/* Row 1: Category Filter Tabs & View Mode Switcher */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div
-              role="tablist"
-              aria-label="Gallery category filter"
-              className="flex items-center gap-1.5 p-1.5 bg-[#EFECE6] rounded-xl overflow-x-auto no-scrollbar"
-            >
-              {CATEGORIES.map((cat) => {
-                const isActive = activeCategory === cat.id;
-                const count =
-                  cat.id === 'all'
-                    ? GALLERY_WORKS.length
-                    : GALLERY_WORKS.filter((w) => w.category === cat.id).length;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveCategory(cat.id)}
-                    className={`px-3.5 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                      isActive
-                        ? 'bg-[#141413] text-[#FAF8F5] shadow-xs'
-                        : 'text-[#57534E] hover:text-[#141413]'
-                    }`}
-                  >
-                    {cat.label}{' '}
-                    <span className="font-mono text-[11px] opacity-75 tabular-nums">
-                      ({count})
-                    </span>
-                  </button>
-                );
-              })}
+        {/* Visible Category Filter Buttons (Ordinary buttons with aria-pressed) */}
+        <div
+          role="group"
+          aria-label="Filter work by celebration category"
+          className="flex flex-wrap items-center gap-2 pb-4 sm:pb-5 border-b border-[#E2DDD5]"
+        >
+          {CATEGORIES.map((cat) => {
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`min-h-[44px] px-4 py-2 text-xs sm:text-sm font-medium border transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus ${
+                  isActive
+                    ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
+                    : 'bg-transparent text-[#57534E] border-[#E2DDD5] hover:border-[#141413] hover:text-[#141413]'
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Compact, Clearly Labeled "Refine" Panel */}
+        <div
+          role="region"
+          aria-label="Refine"
+          className="py-3.5 px-4 my-4 sm:my-5 bg-[#F3EFEA] border border-[#E2DDD5] flex flex-col lg:flex-row lg:items-center justify-between gap-3.5"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+            <div className="inline-flex items-center gap-2 text-xs font-medium text-[#141413] shrink-0">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-[#53614A]" />
+              <span>Refine</span>
             </div>
 
-            {/* View Mode Switcher */}
-            <div
-              role="group"
-              aria-label="Gallery layout mode"
-              className="inline-flex items-center self-start lg:self-auto p-1 bg-[#EFECE6] rounded-lg shrink-0"
-            >
-              <button
-                type="button"
-                onClick={() => setViewMode('bento')}
-                aria-pressed={viewMode === 'bento'}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  viewMode === 'bento'
-                    ? 'bg-white text-[#141413] shadow-xs'
-                    : 'text-[#57534E] hover:text-[#141413]'
-                }`}
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                <span>Bento</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('masonry')}
-                aria-pressed={viewMode === 'masonry'}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  viewMode === 'masonry'
-                    ? 'bg-white text-[#141413] shadow-xs'
-                    : 'text-[#57534E] hover:text-[#141413]'
-                }`}
-              >
-                <Columns className="w-3.5 h-3.5" />
-                <span>Monograph</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('index')}
-                aria-pressed={viewMode === 'index'}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  viewMode === 'index'
-                    ? 'bg-white text-[#141413] shadow-xs'
-                    : 'text-[#57534E] hover:text-[#141413]'
-                }`}
-              >
-                <List className="w-3.5 h-3.5" />
-                <span>Index</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Row 2: Search Box, Saved Moodboard Filter, and Sort Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-            <div className="relative flex-1 min-w-[220px] max-w-md">
-              <Search className="w-4 h-4 text-[#78716C] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-sm">
+              <Search className="w-4 h-4 text-[#57534E] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Hyderabad, Shamshabad, Gandipet, Nellore, couple, or camera..."
-                aria-label="Search gallery works by location, couple, camera, or Instagram tag"
-                className="w-full pl-9 pr-3 py-2 text-xs bg-white border border-[#D6D0C6] rounded-lg text-[#141413] placeholder:text-[#78716C] focus:outline-none focus:border-[#141413]"
+                placeholder="Search couple, location, or celebration..."
+                aria-label="Search photographs by couple, location, or celebration"
+                className="w-full min-h-[44px] pl-9 pr-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] placeholder:text-[#57534E] editorial-focus"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Saved Moodboard Toggle */}
-              <button
-                type="button"
-                onClick={() => setOnlySaved((prev) => !prev)}
-                aria-pressed={onlySaved}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 text-xs font-medium rounded-lg border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                  onlySaved
-                    ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
-                    : 'bg-white text-[#141413] border-[#D6D0C6] hover:bg-[#EFECE6]'
-                }`}
+            {/* Sort Selector */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="gallery-sort-select"
+                className="text-xs text-[#57534E] whitespace-nowrap"
               >
-                <Heart
-                  className={`w-3.5 h-3.5 ${
-                    onlySaved || savedIds.length > 0 ? 'fill-current' : ''
-                  }`}
-                />
-                <span className="tabular-nums">Saved Frames ({savedIds.length})</span>
-              </button>
-
-              {/* Sort Select */}
-              <label className="inline-flex items-center gap-2 text-xs text-[#57534E]">
-                <span className="sr-only">Sort works by</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortMode)}
-                  aria-label="Sort gallery works"
-                  className="px-3 py-2 text-xs font-medium bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413] cursor-pointer"
-                >
-                  <option value="featured">Curated Mix</option>
-                  <option value="post-group">By Instagram Carousel</option>
-                  <option value="frame-sequence">Frame Sequence (01–23)</option>
-                </select>
+                Sort
               </label>
+              <select
+                id="gallery-sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortMode)}
+                className="min-h-[44px] px-3 py-2 text-xs sm:text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] cursor-pointer editorial-focus"
+              >
+                <option value="featured">Editorial Sequence</option>
+                <option value="post-group">By Story</option>
+                <option value="frame-sequence">Archive Order (01–23)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Saved-Only Filter Button */}
+            <button
+              type="button"
+              onClick={() => setOnlySaved((prev) => !prev)}
+              aria-pressed={onlySaved}
+              className={`min-h-[44px] px-3.5 py-2 text-xs sm:text-sm font-medium border inline-flex items-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus ${
+                onlySaved
+                  ? 'bg-[#53614A] text-[#FAF8F5] border-[#53614A]'
+                  : 'bg-[#FAF8F5] text-[#141413] border-[#CFC8BC] hover:bg-[#DDE3D7]/50'
+              }`}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 ${
+                  onlySaved || savedIds.length > 0 ? 'fill-current' : ''
+                }`}
+              />
+              <span className="tabular-nums">Saved ({savedIds.length})</span>
+            </button>
+
+            {/* Layout Mode Selector: Editorial, Masonry, Index */}
+            <div
+              role="group"
+              aria-label="Gallery layout view"
+              className="inline-flex items-center border border-[#CFC8BC] bg-[#FAF8F5]"
+            >
+              {VIEW_MODES.map((mode) => {
+                const active = viewMode === mode.id;
+                return (
+                  <button
+                    key={mode.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setViewMode(mode.id)}
+                    className={`min-h-[44px] px-3.5 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus ${
+                      active
+                        ? 'bg-[#141413] text-[#FAF8F5]'
+                        : 'text-[#57534E] hover:text-[#141413]'
+                    }`}
+                  >
+                    {mode.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
+        {/* Status Count */}
+        <div
+          aria-live="polite"
+          className="mb-6 flex items-center justify-between text-xs text-[#57534E]"
+        >
+          <span>
+            Showing {filteredWorks.length} of {GALLERY_WORKS.length} photographs
+          </span>
+          {(activeCategory !== 'all' ||
+            searchQuery.trim() !== '' ||
+            onlySaved) && (
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="min-h-[44px] px-2 inline-flex items-center gap-1.5 text-xs font-medium text-[#141413] underline underline-offset-4 hover:text-[#53614A] cursor-pointer editorial-focus"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
+
         {/* Empty State */}
         {filteredWorks.length === 0 ? (
-          <div className="py-20 px-6 text-center rounded-2xl border border-[#E6E1DA] bg-[#F5F2EC]">
-            <p className="font-serif text-2xl text-[#141413] mb-2">
-              No @light_of_love__ frames match your current filter.
+          <div className="py-16 px-6 text-center border border-[#E2DDD5] bg-[#F3EFEA]">
+            <p className="font-serif text-2xl sm:text-3xl text-[#141413] mb-2">
+              No photographs match your current selection.
             </p>
             <p className="text-sm text-[#57534E] max-w-md mx-auto mb-6">
               {onlySaved && savedIds.length === 0
-                ? 'Your saved frames list is currently empty. Click the heart icon on any photograph to save your favorite moments.'
-                : 'Try clearing your search query or switching back to All Works.'}
+                ? 'You have not saved any photographs yet. Select the heart button on any photograph to add it to your inquiry selection.'
+                : 'Try clearing your search terms or returning to All Work.'}
             </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-medium text-[#FAF8F5] bg-[#141413] rounded-lg hover:bg-[#2C2A28] transition-colors cursor-pointer"
+              className="min-h-[44px] inline-flex items-center gap-2 px-6 py-2.5 text-xs sm:text-sm font-medium text-[#FAF8F5] bg-[#141413] hover:bg-[#53614A] transition-colors cursor-pointer editorial-focus"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Gallery Filters</span>
+              <span>Reset Filters</span>
             </button>
           </div>
         ) : viewMode === 'bento' ? (
-          /* MODE 1: Dynamic Editorial Bento Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-            {filteredWorks.map((work, index) => {
-              const isSaved = savedIds.includes(work.id);
-              const patternIndex = index % 6;
-              let colSpanClass = 'lg:col-span-4';
-              let heightClass = 'h-[400px] sm:h-[440px]';
+          /* MODE 1: Editorial Sequence (Curated 12-column publication spreads with consistent white space) */
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start"
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredWorks.map((work) => {
+                const isSaved = savedIds.includes(work.id);
+                const { colSpan, aspect, sizes } = getEditorialGridClasses(work);
 
-              if (patternIndex === 0) {
-                colSpanClass = 'md:col-span-2 lg:col-span-7';
-                heightClass = 'h-[440px] sm:h-[540px]';
-              } else if (patternIndex === 1) {
-                colSpanClass = 'lg:col-span-5';
-                heightClass = 'h-[440px] sm:h-[540px]';
-              } else if (patternIndex === 2 || patternIndex === 3 || patternIndex === 4) {
-                colSpanClass = 'lg:col-span-4';
-                heightClass = 'h-[400px] sm:h-[460px]';
-              } else if (patternIndex === 5) {
-                colSpanClass = 'md:col-span-2 lg:col-span-12';
-                heightClass = 'h-[420px] sm:h-[520px]';
-              }
+                return (
+                  <motion.article
+                    key={work.id}
+                    layout
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    exit={
+                      shouldReduceMotion
+                        ? { opacity: 0 }
+                        : { opacity: 0, scale: 0.98 }
+                    }
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{
+                      duration: shouldReduceMotion ? 0 : 0.45,
+                      ease: [0.22, 1, 0.36, 1],
+                      layout: {
+                        duration: shouldReduceMotion ? 0 : 0.45,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }}
+                    className={`${colSpan} flex flex-col group`}
+                  >
+                  {/* Photograph Frame */}
+                  <div className="relative w-full border border-[#E2DDD5] bg-[#EBE6DF]">
+                    <button
+                      type="button"
+                      onClick={(e) =>
+                        onOpenLightbox(work, filteredWorks, e.currentTarget)
+                      }
+                      aria-label={`Open photograph: ${work.couple} in ${work.shortLocation ?? work.location}`}
+                      className={`relative block w-full ${aspect} overflow-hidden text-left cursor-pointer editorial-focus`}
+                    >
+                      <EditorialImage
+                        src={work.image}
+                        alt={`${work.couple} — ${work.categoryLabel} in ${work.shortLocation ?? work.location}`}
+                        focalPosition={work.focalPosition ?? '50% 24%'}
+                        sizes={sizes}
+                        containerClassName="w-full h-full relative overflow-hidden"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        frameLabel={work.frameNumber}
+                        subtitle={work.shortLocation ?? work.location}
+                      />
+                    </button>
 
-              return (
-                <article
-                  key={work.id}
-                  className={`${colSpanClass} group relative rounded-2xl overflow-hidden border border-[#E6E1DA] bg-[#EBE6DF] flex flex-col`}
-                >
-                  <div className={`relative w-full ${heightClass} overflow-hidden`}>
-                    <EditorialImage
-                      src={work.image}
-                      alt={`${work.title} — ${work.couple} (${work.location})`}
-                      containerClassName="w-full h-full relative overflow-hidden bg-[#E5DFD5]"
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.03]"
-                      frameLabel={work.frameNumber}
-                      subtitle={work.location}
-                    />
+                    {/* Discoverable 44x44px Save Button */}
+                    <button
+                      type="button"
+                      onClick={() => onToggleSave(work.id)}
+                      aria-pressed={isSaved}
+                      aria-label={
+                        isSaved
+                          ? `Remove ${work.couple} (${work.frameNumber}) from saved photographs`
+                          : `Save ${work.couple} (${work.frameNumber}) to inquiry selection`
+                      }
+                      className={`absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] inline-flex items-center justify-center border transition-colors cursor-pointer editorial-focus ${
+                        isSaved
+                          ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
+                          : 'bg-[#FAF8F5]/90 text-[#141413] border-[#CFC8BC] hover:bg-[#FAF8F5]'
+                      }`}
+                    >
+                      <Heart
+                        className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`}
+                      />
+                    </button>
+                  </div>
 
-                    {/* Measured Contrast Scrim */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent pointer-events-none" />
-
-                    {/* Top Right Interactive Controls */}
-                    <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-                      <button
-                        type="button"
-                        onClick={() => onToggleSave(work.id)}
-                        aria-label={
-                          isSaved
-                            ? `Remove ${work.title} from saved frames`
-                            : `Save ${work.title} to saved frames`
-                        }
-                        className={`w-9 h-9 inline-flex items-center justify-center rounded-lg backdrop-blur-sm transition-colors cursor-pointer ${
-                          isSaved
-                            ? 'bg-white text-[#141413]'
-                            : 'bg-black/55 text-white hover:bg-black/80'
-                        }`}
-                      >
-                        <Heart
-                          className={`w-4 h-4 ${isSaved ? 'fill-[#141413]' : ''}`}
-                        />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => onOpenLightbox(work, filteredWorks)}
-                        aria-label={`Open ${work.title} in fullscreen viewer`}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-black/55 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-sm transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-                      >
-                        <Maximize2 className="w-3.5 h-3.5" />
-                        <span>View Frame</span>
-                      </button>
+                  {/* Concise Caption Below Photograph */}
+                  <div className="pt-3.5 flex items-baseline justify-between gap-4">
+                    <div>
+                      <h3 className="font-serif text-xl sm:text-2xl text-[#141413] tracking-tight">
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            onOpenLightbox(work, filteredWorks, e.currentTarget)
+                          }
+                          className="text-left hover:underline underline-offset-4 decoration-[#53614A] cursor-pointer editorial-focus"
+                        >
+                          {work.couple}
+                        </button>
+                      </h3>
+                      <p className="text-xs sm:text-sm text-[#57534E] mt-0.5">
+                        {work.categoryLabel} · {work.shortLocation ?? work.location}
+                      </p>
                     </div>
 
-                    {/* Bottom Editorial Caption & Unboxed Metadata */}
-                    <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 text-white">
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-stone-200 font-mono tabular-nums mb-1">
-                        <span>Frame {work.frameNumber}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{work.categoryLabel}</span>
-                        <span aria-hidden="true">·</span>
-                        <span>{work.location}</span>
-                      </div>
+                    <span className="font-mono text-xs text-[#57534E] tabular-nums shrink-0">
+                      {work.frameNumber}
+                    </span>
+                  </div>
 
-                      <div className="flex items-baseline justify-between gap-4">
-                        <div>
-                          <h3 className="font-serif text-2xl sm:text-3xl text-white tracking-tight">
-                            <button
-                              type="button"
-                              onClick={() => onOpenLightbox(work, filteredWorks)}
-                              className="text-left hover:underline underline-offset-4 cursor-pointer"
-                            >
-                              {work.couple}
-                            </button>
-                          </h3>
-                          <p className="text-xs text-stone-200 mt-1 line-clamp-1">
-                            {work.caption}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 pt-2.5 border-t border-white/20 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-stone-300 tabular-nums">
-                        <span>
-                          Captured on {work.capturedOn} · /p/{work.postShortcode} ({work.slideNumber}/{work.totalSlidesInPost})
-                        </span>
+                  {/* Optional Expandable Technical Credits & Source Information */}
+                  <details className="mt-2 text-xs text-[#57534E] border-t border-[#E2DDD5] pt-2">
+                    <summary className="min-h-[36px] inline-flex items-center gap-1.5 cursor-pointer select-none text-[#57534E] hover:text-[#141413] editorial-focus">
+                      <span>Photograph details</span>
+                    </summary>
+                    <div className="pt-2 pb-1 space-y-1.5 text-xs text-[#57534E]">
+                      <p className="font-mono text-[11px]">
+                        {formatCaptureCredit(work)}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-4 pt-1">
                         <button
                           type="button"
                           onClick={() => onSelectStory(work.storyId)}
-                          className="text-white hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                          className="text-[#141413] underline underline-offset-4 hover:text-[#53614A] cursor-pointer editorial-focus"
                         >
-                          Open Series →
+                          Read {work.couple} story
                         </button>
+                        <a
+                          href={work.postUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[#141413] underline underline-offset-4 hover:text-[#53614A] editorial-focus"
+                        >
+                          <span>Source post</span>
+                          <ArrowUpRight className="w-3 h-3" />
+                        </a>
                       </div>
                     </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                  </details>
+                  </motion.article>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         ) : viewMode === 'masonry' ? (
-          /* MODE 2: Editorial Monograph Masonry Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-            {filteredWorks.map((work) => {
-              const isSaved = savedIds.includes(work.id);
-              const aspectClass =
-                work.aspectRatio === 'portrait' ? 'aspect-[3/4]' : 'aspect-[3/2]';
+          /* MODE 2: Masonry Grid Preserving Natural Portrait & Landscape Ratios */
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start"
+          >
+            <AnimatePresence mode="popLayout">
+              {filteredWorks.map((work) => {
+                const isSaved = savedIds.includes(work.id);
+                const aspectClass =
+                  work.aspectRatio === 'landscape'
+                    ? 'aspect-[3/2]'
+                    : 'aspect-[4/5]';
 
-              return (
-                <article key={work.id} className="flex flex-col group">
-                  <div
-                    className={`relative w-full ${aspectClass} rounded-2xl overflow-hidden border border-[#E6E1DA] bg-[#EBE6DF] mb-4`}
+                return (
+                  <motion.article
+                    key={work.id}
+                    layout
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    exit={
+                      shouldReduceMotion
+                        ? { opacity: 0 }
+                        : { opacity: 0, scale: 0.98 }
+                    }
+                    viewport={{ once: true, amount: 0.12 }}
+                    transition={{
+                      duration: shouldReduceMotion ? 0 : 0.45,
+                      ease: [0.22, 1, 0.36, 1],
+                      layout: {
+                        duration: shouldReduceMotion ? 0 : 0.45,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }}
+                    className="flex flex-col group"
                   >
-                    <EditorialImage
-                      src={work.image}
-                      alt={`${work.title} — ${work.couple}`}
-                      containerClassName="w-full h-full relative overflow-hidden"
-                      className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
-                      frameLabel={work.frameNumber}
-                      subtitle={work.location}
-                    />
-                    <div className="absolute top-3 right-3 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => onToggleSave(work.id)}
-                        aria-label={
-                          isSaved
-                            ? `Remove ${work.title} from saved frames`
-                            : `Save ${work.title} to saved frames`
-                        }
-                        className={`w-8 h-8 inline-flex items-center justify-center rounded-lg backdrop-blur-sm transition-colors cursor-pointer ${
-                          isSaved
-                            ? 'bg-[#141413] text-white'
-                            : 'bg-black/55 text-white hover:bg-black/80'
-                        }`}
-                      >
-                        <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onOpenLightbox(work, filteredWorks)}
-                        aria-label={`Inspect ${work.title}`}
-                        className="px-2.5 py-1.5 rounded-lg bg-black/55 hover:bg-black/80 text-white text-xs font-medium backdrop-blur-sm transition-colors cursor-pointer"
-                      >
-                        Inspect
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Clean Unboxed Monograph Caption */}
-                  <div className="flex items-center gap-2 text-xs text-[#57534E] font-mono tabular-nums mb-1">
-                    <span>Frame {work.frameNumber}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>/p/{work.postShortcode}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{work.location}</span>
-                  </div>
-
-                  <h3 className="font-serif text-2xl text-[#141413] tracking-tight mb-1.5">
+                  <div className="relative w-full border border-[#E2DDD5] bg-[#EBE6DF]">
                     <button
                       type="button"
-                      onClick={() => onOpenLightbox(work, filteredWorks)}
-                      className="text-left hover:underline underline-offset-4 cursor-pointer"
+                      onClick={(e) =>
+                        onOpenLightbox(work, filteredWorks, e.currentTarget)
+                      }
+                      aria-label={`Open photograph: ${work.couple} in ${work.shortLocation ?? work.location}`}
+                      className={`relative block w-full ${aspectClass} overflow-hidden text-left cursor-pointer editorial-focus`}
                     >
-                      {work.title}
+                      <EditorialImage
+                        src={work.image}
+                        alt={`${work.couple} — ${work.categoryLabel} in ${work.shortLocation ?? work.location}`}
+                        focalPosition={work.focalPosition ?? '50% 24%'}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 420px"
+                        containerClassName="w-full h-full relative overflow-hidden"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                        frameLabel={work.frameNumber}
+                        subtitle={work.shortLocation ?? work.location}
+                      />
                     </button>
-                  </h3>
 
-                  <p className="text-sm text-[#44403C] leading-relaxed mb-3 line-clamp-2">
-                    {work.caption}
-                  </p>
-
-                  <div className="mt-auto pt-3 border-t border-[#E6E1DA] flex items-center justify-between gap-2 text-xs font-mono text-[#78716C] tabular-nums">
-                    <span className="truncate">{formatCaptureCredit(work)}</span>
+                    <button
+                      type="button"
+                      onClick={() => onToggleSave(work.id)}
+                      aria-pressed={isSaved}
+                      aria-label={
+                        isSaved
+                          ? `Remove ${work.couple} (${work.frameNumber}) from saved photographs`
+                          : `Save ${work.couple} (${work.frameNumber}) to inquiry selection`
+                      }
+                      className={`absolute top-3 right-3 z-10 min-w-[44px] min-h-[44px] inline-flex items-center justify-center border transition-colors cursor-pointer editorial-focus ${
+                        isSaved
+                          ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
+                          : 'bg-[#FAF8F5]/90 text-[#141413] border-[#CFC8BC] hover:bg-[#FAF8F5]'
+                      }`}
+                    >
+                      <Heart
+                        className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`}
+                      />
+                    </button>
                   </div>
-                </article>
-              );
-            })}
-          </div>
+
+                  <div className="pt-3 flex items-baseline justify-between gap-3">
+                    <div>
+                      <h3 className="font-serif text-xl text-[#141413]">
+                        <button
+                          type="button"
+                          onClick={(e) =>
+                            onOpenLightbox(work, filteredWorks, e.currentTarget)
+                          }
+                          className="text-left hover:underline underline-offset-4 cursor-pointer editorial-focus"
+                        >
+                          {work.couple}
+                        </button>
+                      </h3>
+                      <p className="text-xs text-[#57534E] mt-0.5">
+                        {work.categoryLabel} · {work.shortLocation ?? work.location}
+                      </p>
+                    </div>
+                    <span className="font-mono text-xs text-[#57534E] tabular-nums">
+                      {work.frameNumber}
+                    </span>
+                  </div>
+
+                  <details className="mt-2 text-xs text-[#57534E] border-t border-[#E2DDD5] pt-2">
+                    <summary className="min-h-[36px] inline-flex items-center cursor-pointer select-none hover:text-[#141413] editorial-focus">
+                      Photograph details
+                    </summary>
+                    <div className="pt-1.5 space-y-1">
+                      <p className="font-mono text-[11px]">
+                        {formatCaptureCredit(work)}
+                      </p>
+                      <a
+                        href={work.postUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[#141413] underline underline-offset-4"
+                      >
+                        <span>Source post</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </details>
+                  </motion.article>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
         ) : (
-          /* MODE 3: Andy Hardy Inspired Overview / Technical Archive Index */
+          /* MODE 3: Archive Index (Works on keyboard focus, click selection, and hover) */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Tabular Archive List */}
-            <div className="lg:col-span-7 border-t border-[#D6D0C6]">
-              {filteredWorks.map((work) => {
-                const isSelected = activeIndexPreviewWork.id === work.id;
-                const isSaved = savedIds.includes(work.id);
-                return (
-                  <div
-                    key={work.id}
-                    onMouseEnter={() => setHoveredIndexWorkId(work.id)}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 px-3 border-b border-[#E6E1DA] transition-colors ${
-                      isSelected ? 'bg-[#EFECE6]' : 'hover:bg-[#F5F2EC]'
-                    }`}
-                  >
+            <motion.div layout className="lg:col-span-7 border-t border-[#CFC8BC]">
+              <AnimatePresence mode="popLayout">
+                {filteredWorks.map((work) => {
+                  const isSelected = activeIndexPreviewWork.id === work.id;
+                  const isSaved = savedIds.includes(work.id);
+                  return (
+                    <motion.div
+                      key={work.id}
+                      layout
+                      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      viewport={{ once: true, amount: 0.1 }}
+                      transition={{
+                        duration: shouldReduceMotion ? 0 : 0.35,
+                        ease: [0.22, 1, 0.36, 1],
+                        layout: {
+                          duration: shouldReduceMotion ? 0 : 0.35,
+                          ease: [0.22, 1, 0.36, 1],
+                        },
+                      }}
+                      onMouseEnter={() => setActiveIndexWorkId(work.id)}
+                      onFocusCapture={() => setActiveIndexWorkId(work.id)}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 px-3 border-b border-[#E2DDD5] transition-colors ${
+                        isSelected ? 'bg-[#DDE3D7]/45' : 'hover:bg-[#F3EFEA]'
+                      }`}
+                    >
                     <div className="flex items-baseline gap-4 min-w-0">
-                      <span className="font-mono text-xs text-[#78716C] tabular-nums shrink-0">
+                      <span className="font-mono text-xs text-[#57534E] tabular-nums shrink-0">
                         {work.frameNumber}
                       </span>
                       <div className="min-w-0">
                         <button
                           type="button"
-                          onClick={() => onOpenLightbox(work, filteredWorks)}
-                          className="font-serif text-xl text-[#141413] hover:underline underline-offset-4 text-left truncate block cursor-pointer"
+                          onClick={(e) => {
+                            setActiveIndexWorkId(work.id);
+                            onOpenLightbox(work, filteredWorks, e.currentTarget);
+                          }}
+                          className="font-serif text-xl text-[#141413] hover:underline underline-offset-4 text-left truncate block cursor-pointer editorial-focus"
                         >
-                          {work.title}
+                          {work.couple} — {work.categoryLabel}
                         </button>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-[#57534E] mt-0.5">
-                          <span>{work.couple}</span>
-                          <span aria-hidden="true">·</span>
-                          <span>{work.location}</span>
-                          <span aria-hidden="true">·</span>
-                          <span className="font-mono">{work.capturedOn}</span>
+                        <div className="text-xs text-[#57534E] mt-0.5">
+                          {work.shortLocation ?? work.location}
                         </div>
                       </div>
                     </div>
@@ -520,58 +684,112 @@ export function PortfolioGallery({
                     <div className="flex items-center gap-2 shrink-0">
                       <button
                         type="button"
-                        onClick={() => onToggleSave(work.id)}
-                        aria-label={
-                          isSaved
-                            ? `Remove ${work.title} from saved frames`
-                            : `Save ${work.title} to saved frames`
-                        }
-                        className="px-2.5 py-1.5 text-xs border border-[#D6D0C6] rounded-md hover:bg-white transition-colors cursor-pointer"
+                        onClick={() => setActiveIndexWorkId(work.id)}
+                        aria-pressed={isSelected}
+                        className="min-h-[44px] px-3 py-2 text-xs border border-[#CFC8BC] bg-[#FAF8F5] text-[#141413] hover:bg-[#DDE3D7]/40 transition-colors cursor-pointer editorial-focus"
                       >
-                        {isSaved ? 'Saved ♥' : 'Save'}
+                        Preview
                       </button>
                       <button
                         type="button"
-                        onClick={() => onOpenLightbox(work, filteredWorks)}
-                        aria-label={`Open Frame ${work.frameNumber}: ${work.title}`}
-                        className="px-3 py-1.5 text-xs font-medium bg-[#141413] text-[#FAF8F5] rounded-md hover:bg-[#2C2A28] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                        onClick={() => onToggleSave(work.id)}
+                        aria-pressed={isSaved}
+                        aria-label={
+                          isSaved
+                            ? `Remove ${work.couple} (${work.frameNumber}) from saved photographs`
+                            : `Save ${work.couple} (${work.frameNumber}) to inquiry selection`
+                        }
+                        className={`min-w-[44px] min-h-[44px] px-3 py-2 text-xs border transition-colors cursor-pointer editorial-focus ${
+                          isSaved
+                            ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
+                            : 'bg-[#FAF8F5] text-[#141413] border-[#CFC8BC] hover:bg-[#DDE3D7]/40'
+                        }`}
                       >
-                        Open Frame
+                        {isSaved ? 'Saved' : 'Save'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) =>
+                          onOpenLightbox(work, filteredWorks, e.currentTarget)
+                        }
+                        aria-label={`Open Frame ${work.frameNumber}: ${work.couple}`}
+                        className="min-h-[44px] px-3.5 py-2 text-xs font-medium bg-[#141413] text-[#FAF8F5] hover:bg-[#53614A] transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus"
+                      >
+                        Open
                       </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
 
-            {/* Sticky Live Preview Plate on Desktop */}
-            <div className="lg:col-span-5 lg:sticky lg:top-24 rounded-2xl border border-[#E6E1DA] bg-[#F3EFEA] p-5">
-              <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-4">
-                <EditorialImage
-                  src={activeIndexPreviewWork.image}
-                  alt={activeIndexPreviewWork.title}
-                  containerClassName="w-full h-full relative overflow-hidden"
-                  className="w-full h-full object-cover object-top"
-                  frameLabel={activeIndexPreviewWork.frameNumber}
-                  subtitle={activeIndexPreviewWork.location}
-                />
+            {/* Sticky Preview Pane */}
+            <div className="lg:col-span-5 lg:sticky lg:top-24 border border-[#E2DDD5] bg-[#F3EFEA] p-5">
+              <button
+                type="button"
+                onClick={(e) =>
+                  onOpenLightbox(
+                    activeIndexPreviewWork,
+                    filteredWorks,
+                    e.currentTarget
+                  )
+                }
+                aria-label={`Open previewed photograph: ${activeIndexPreviewWork.couple}`}
+                className="w-full text-left block cursor-pointer editorial-focus"
+              >
+                <div
+                  className={`relative w-full ${
+                    activeIndexPreviewWork.aspectRatio === 'landscape'
+                      ? 'aspect-[3/2]'
+                      : 'aspect-[4/5]'
+                  } overflow-hidden border border-[#E2DDD5] bg-[#EBE6DF] mb-4`}
+                >
+                  <EditorialImage
+                    src={activeIndexPreviewWork.image}
+                    alt={`${activeIndexPreviewWork.couple} — ${activeIndexPreviewWork.shortLocation ?? activeIndexPreviewWork.location}`}
+                    focalPosition={
+                      activeIndexPreviewWork.focalPosition ?? '50% 24%'
+                    }
+                    sizes="(max-width: 1024px) 100vw, 460px"
+                    containerClassName="w-full h-full relative overflow-hidden"
+                    className="w-full h-full object-cover"
+                    frameLabel={activeIndexPreviewWork.frameNumber}
+                    subtitle={
+                      activeIndexPreviewWork.shortLocation ??
+                      activeIndexPreviewWork.location
+                    }
+                  />
+                </div>
+              </button>
+
+              <div className="flex items-baseline justify-between gap-2 mb-1">
+                <h3 className="font-serif text-2xl text-[#141413]">
+                  {activeIndexPreviewWork.couple}
+                </h3>
+                <span className="font-mono text-xs text-[#57534E] tabular-nums">
+                  Frame {activeIndexPreviewWork.frameNumber}
+                </span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-[#57534E] tabular-nums mb-1">
-                <span>Frame {activeIndexPreviewWork.frameNumber}</span>
-                <span aria-hidden="true">·</span>
-                <span>/p/{activeIndexPreviewWork.postShortcode}</span>
-                <span aria-hidden="true">·</span>
-                <span>{activeIndexPreviewWork.dimensions}</span>
-              </div>
-              <h3 className="font-serif text-2xl text-[#141413] mb-2">
-                {activeIndexPreviewWork.title}
-              </h3>
-              <p className="text-xs text-[#44403C] leading-relaxed mb-4">
-                {activeIndexPreviewWork.caption}
+              <p className="text-xs sm:text-sm text-[#57534E] mb-3">
+                {activeIndexPreviewWork.categoryLabel} ·{' '}
+                {activeIndexPreviewWork.shortLocation ??
+                  activeIndexPreviewWork.location}
               </p>
-              <div className="pt-3 border-t border-[#E6E1DA] text-[11px] font-mono text-[#57534E] tabular-nums">
-                {formatCaptureCredit(activeIndexPreviewWork)}
-              </div>
+
+              <details className="text-xs text-[#57534E] border-t border-[#E2DDD5] pt-2.5">
+                <summary className="min-h-[36px] inline-flex items-center cursor-pointer select-none hover:text-[#141413] editorial-focus">
+                  Technical credit &amp; source
+                </summary>
+                <div className="pt-2 space-y-1.5">
+                  <p className="italic font-serif text-sm text-[#141413]">
+                    “{activeIndexPreviewWork.caption}”
+                  </p>
+                  <p className="font-mono text-[11px]">
+                    {formatCaptureCredit(activeIndexPreviewWork)}
+                  </p>
+                </div>
+              </details>
             </div>
           </div>
         )}

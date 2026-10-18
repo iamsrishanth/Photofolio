@@ -31,18 +31,18 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'Light of Love — Editorial Wedding Photography Studio',
   description:
-    'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad, Gandipet, and Warangal.',
+    'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad and Beyond.',
   openGraph: {
     title: 'Light of Love — Editorial Wedding Photography Studio',
     description:
-      'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad, Gandipet, and Warangal.',
+      'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad and Beyond.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Light of Love — Editorial Wedding Photography Studio',
     description:
-      'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad, Gandipet, and Warangal.',
+      'Interactive wedding & events photography portfolio for Light of Love (@light_of_love__), showcasing Christian weddings, couple shoots, Haldi celebrations, bridal portraits, and saree ceremonies in Hyderabad and Beyond.',
   },
 };
 

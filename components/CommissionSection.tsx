@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Check, CheckCircle2, AlertCircle, ArrowUpRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import {
+  AlertCircle,
+  ArrowUpRight,
+  ArrowRight,
+  FileText,
+} from 'lucide-react';
 import {
   EVENT_COVERAGE_OPTIONS,
   GALLERY_WORKS,
@@ -17,14 +22,13 @@ interface CommissionSectionProps {
   savedIds: string[];
 }
 
-interface SubmittedInquiry extends InquiryFormInput {
-  submittedAt: string;
-  selectedCelebrationNames: string[];
+interface PreparedInquiryBrief extends InquiryFormInput {
+  preparedAt: string;
   moodboardFrames: string[];
 }
 
 export function CommissionSection({ savedIds }: CommissionSectionProps) {
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([
+  const [selectedEvents] = useState<string[]>([
     'christian-wedding',
     'couple-portraits',
   ]);
@@ -38,8 +42,14 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
   const [errors, setErrors] = useState<
     Partial<Record<keyof InquiryFormInput, string>>
   >({});
-  const [submittedInquiry, setSubmittedInquiry] =
-    useState<SubmittedInquiry | null>(null);
+  const [preparedBrief, setPreparedBrief] =
+    useState<PreparedInquiryBrief | null>(null);
+
+  const coupleNamesRef = useRef<HTMLInputElement | null>(null);
+  const contactInfoRef = useRef<HTMLInputElement | null>(null);
+  const eventDateRef = useRef<HTMLInputElement | null>(null);
+  const venueLocationRef = useRef<HTMLInputElement | null>(null);
+  const notesRef = useRef<HTMLTextAreaElement | null>(null);
 
   const summary = summarizeSelectedCelebrations({
     selectedEventIds: selectedEvents,
@@ -48,10 +58,20 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
     allWorks: GALLERY_WORKS,
   });
 
-  const handleToggleCelebration = (id: string) => {
-    setSelectedEvents((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const focusFirstInvalidField = (
+    validationErrors: Partial<Record<keyof InquiryFormInput, string>>
+  ) => {
+    if (validationErrors.coupleNames) {
+      coupleNamesRef.current?.focus();
+    } else if (validationErrors.contactInfo) {
+      contactInfoRef.current?.focus();
+    } else if (validationErrors.eventDate) {
+      eventDateRef.current?.focus();
+    } else if (validationErrors.venueLocation) {
+      venueLocationRef.current?.focus();
+    } else if (validationErrors.notes) {
+      notesRef.current?.focus();
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -68,19 +88,19 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
     const validation = validateInquiryForm(formPayload);
     if (!validation.valid) {
       setErrors(validation.errors);
+      focusFirstInvalidField(validation.errors);
       return;
     }
 
     setErrors({});
 
-    setSubmittedInquiry({
+    setPreparedBrief({
       ...formPayload,
-      submittedAt: new Date().toLocaleDateString('en-US', {
+      preparedAt: new Date().toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
       }),
-      selectedCelebrationNames: summary.selectedNames,
       moodboardFrames: summary.savedFramesSummary,
     });
   };
@@ -88,288 +108,139 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
   return (
     <section
       id="collections"
-      className="scroll-mt-20 w-full py-16 sm:py-24 bg-[#F3EFEA] text-[#141413] border-b border-[#E6E1DA]"
+      aria-labelledby="inquiry-heading"
+      className="scroll-mt-20 w-full py-16 sm:py-24 lg:py-28 bg-[#FAF8F5] text-[#141413] border-b border-[#E2DDD5]"
     >
-      <div className="max-w-[1360px] mx-auto px-5 sm:px-8">
-        {/* Section Heading */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[#57534E] font-mono mb-3">
-              <span>04. #WEDDING &amp; EVENTS</span>
-              <span aria-hidden="true">·</span>
-              <span>{STUDIO_INFO.filmsHandle}</span>
-            </div>
-            <h2
-              className="font-serif text-3xl sm:text-5xl text-[#141413] tracking-tight"
-              style={{ textWrap: 'balance' }}
-            >
-              Celebrations Documented on {STUDIO_INFO.instagramHandle}
-            </h2>
-          </div>
-
-          <p className="text-sm sm:text-base text-[#44403C] max-w-md leading-relaxed">
-            {STUDIO_INFO.ctaNotice} Select the celebration categories featured on{' '}
-            {STUDIO_INFO.instagramHandle} and attach your saved frames to inquire.
-          </p>
-        </div>
-
-        {/* 5 Authentic Celebration Coverage Cards from @light_of_love__ */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {EVENT_COVERAGE_OPTIONS.map((option) => {
-            const isSelected = selectedEvents.includes(option.id);
-            return (
-              <div
-                key={option.id}
-                className={`p-6 sm:p-7 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  isSelected
-                    ? 'bg-[#141413] text-[#FAF8F5] border-[#141413]'
-                    : 'bg-[#FAF8F5] text-[#141413] border-[#D6D0C6]'
-                }`}
-              >
-                <div>
-                  <div
-                    className={`flex items-center justify-between text-xs font-mono tabular-nums mb-3 ${
-                      isSelected ? 'text-stone-400' : 'text-[#78716C]'
-                    }`}
-                  >
-                    <span>Series {option.number}</span>
-                    <span>Post /p/{option.postShortcode}</span>
-                  </div>
-
-                  <h3 className="font-serif text-2xl sm:text-3xl tracking-tight mb-2">
-                    {option.name}
-                  </h3>
-
-                  <div
-                    className={`text-xs font-mono mb-4 ${
-                      isSelected ? 'text-stone-300' : 'text-[#57534E]'
-                    }`}
-                  >
-                    {option.featuredCouple} · {option.featuredLocation}
-                  </div>
-
-                  <div className="pb-5 mb-5 border-b border-current/15 flex items-center justify-between text-xs font-mono tabular-nums">
-                    <span>Captured on {option.capturedOn}</span>
-                    <span>{option.instagramTag}</span>
-                  </div>
-
-                  <ul className="space-y-2 mb-6 text-xs sm:text-sm">
-                    {option.highlights.map((item) => (
-                      <li key={item} className="flex items-start gap-2">
-                        <Check
-                          className={`w-4 h-4 shrink-0 mt-0.5 ${
-                            isSelected ? 'text-stone-300' : 'text-[#141413]'
-                          }`}
-                        />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => handleToggleCelebration(option.id)}
-                  aria-pressed={isSelected}
-                  className={`w-full py-3 px-4 rounded-lg text-xs font-medium inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#FAF8F5] text-[#141413]'
-                      : 'bg-[#141413] text-[#FAF8F5] hover:bg-[#2C2A28]'
-                  }`}
-                >
-                  {isSelected && <Check className="w-3.5 h-3.5" />}
-                  <span>
-                    {isSelected
-                      ? `Included: ${option.name}`
-                      : `Include ${option.name}`}
-                  </span>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Interactive Celebration Selector Summary + Inquiry Form Split */}
-        <div
-          id="commission"
-          className="scroll-mt-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start pt-8 border-t border-[#D6D0C6]"
-        >
-          {/* Left Column: Selected Instagram Series & Camera Summary */}
-          <div className="lg:col-span-5 space-y-6 bg-[#FAF8F5] p-6 sm:p-8 rounded-2xl border border-[#D6D0C6]">
+      <div id="commission" className="scroll-mt-20 editorial-container">
+        <div className="max-w-3xl mx-auto">
+          {/* Section Heading */}
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
             <div>
-              <div className="text-xs text-[#57534E] font-mono mb-1">
-                {STUDIO_INFO.instagramHandle} · {STUDIO_INFO.badgeText}
-              </div>
-              <h3 className="font-serif text-2xl sm:text-3xl text-[#141413]">
-                Selected Celebration Brief
-              </h3>
-            </div>
-
-            {errors.selectedEvents && (
-              <p
-                role="alert"
-                className="text-xs text-red-700 flex items-center gap-1.5 bg-red-50 p-3 rounded-lg border border-red-200"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{errors.selectedEvents}</span>
+              <p className="font-mono text-xs text-[#53614A] mb-2">
+                04 / Inquire
               </p>
-            )}
-
-            <div className="space-y-2.5">
-              <div className="text-xs font-semibold text-[#141413]">
-                Toggle Celebrations from @light_of_love__
-              </div>
-              {EVENT_COVERAGE_OPTIONS.map((opt) => {
-                const checked = selectedEvents.includes(opt.id);
-                return (
-                  <label
-                    key={opt.id}
-                    className={`flex items-start justify-between gap-3 p-3.5 rounded-xl border transition-colors cursor-pointer ${
-                      checked
-                        ? 'bg-[#EFECE6] border-[#141413]'
-                        : 'bg-white border-[#E6E1DA] hover:border-[#A8A29E]'
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => handleToggleCelebration(opt.id)}
-                        className="mt-1 accent-[#141413]"
-                      />
-                      <div>
-                        <div className="text-xs font-medium text-[#141413]">
-                          {opt.name}
-                        </div>
-                        <div className="text-[11px] text-[#57534E] font-mono mt-0.5">
-                          {opt.featuredCouple} · {opt.featuredLocation}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="font-mono text-[11px] font-medium text-[#141413] tabular-nums shrink-0">
-                      /p/{opt.postShortcode}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-
-            {/* Tabular Summary Breakdown of Selected Instagram Series */}
-            <div className="pt-4 border-t border-[#D6D0C6] space-y-2.5 text-xs">
-              <div className="flex justify-between text-[#57534E]">
-                <span>Selected Celebrations</span>
-                <span
-                  data-testid="selected-celebration-count"
-                  className="font-mono font-semibold text-[#141413] tabular-nums"
-                >
-                  {summary.selectedCount} Series
-                </span>
-              </div>
-              <div className="flex justify-between gap-4 text-[#57534E]">
-                <span>Credited Camera Systems</span>
-                <span className="font-mono text-right text-[#141413]">
-                  {summary.camerasUsed.length > 0
-                    ? summary.camerasUsed.join(' · ')
-                    : 'None selected'}
-                </span>
-              </div>
-              <div className="pt-3 border-t border-[#E6E1DA] flex items-center justify-between">
-                <span className="text-[#57534E]">Saved Moodboard Frames</span>
-                <span className="font-mono font-semibold text-[#141413] tabular-nums">
-                  {savedIds.length} Saved
-                </span>
-              </div>
+              <h2
+                id="inquiry-heading"
+                className="font-serif text-3xl sm:text-5xl text-[#141413] tracking-tight"
+                style={{ textWrap: 'balance' }}
+              >
+                Prepare an Inquiry
+              </h2>
             </div>
 
             <a
               href={STUDIO_INFO.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full py-2.5 px-4 rounded-lg border border-[#D6D0C6] text-xs font-medium text-[#141413] hover:bg-[#EFECE6] inline-flex items-center justify-center gap-1.5 transition-colors"
+              className="min-h-[44px] px-4 py-2.5 border border-[#141413] text-xs sm:text-sm font-medium text-[#141413] hover:bg-[#DDE3D7]/60 inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 editorial-focus"
             >
-              <span>Visit {STUDIO_INFO.instagramHandle} on Instagram</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <span>Contact {STUDIO_INFO.instagramHandle} on Instagram</span>
+              <ArrowUpRight className="w-4 h-4" />
             </a>
           </div>
 
-          {/* Right Column: Booking Inquiry Form */}
-          <div className="lg:col-span-7 bg-[#FAF8F5] p-6 sm:p-8 rounded-2xl border border-[#D6D0C6]">
-            {submittedInquiry ? (
+          {/* Local Inquiry Form & Honest Prepared-Brief View */}
+          <div className="bg-[#FAF8F5] p-6 sm:p-8 border border-[#CFC8BC]">
+            {preparedBrief ? (
               <div
                 data-testid="inquiry-confirmation"
-                className="py-6 space-y-6"
+                className="py-4 space-y-6"
               >
-                <div className="flex items-center gap-3 text-[#141413]">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-700 shrink-0" />
+                <div className="flex items-start gap-3 text-[#141413]">
+                  <FileText className="w-6 h-6 text-[#53614A] shrink-0 mt-1" />
                   <div>
-                    <div className="text-xs font-mono text-[#57534E]">
-                      {STUDIO_INFO.name} ({STUDIO_INFO.instagramHandle}) ·{' '}
-                      {submittedInquiry.submittedAt}
+                    <div className="text-xs font-mono text-[#53614A]">
+                      Inquiry Brief Prepared on This Page ·{' '}
+                      {preparedBrief.preparedAt}
                     </div>
-                    <h3 className="font-serif text-3xl text-[#141413]">
-                      Thank You, {submittedInquiry.coupleNames}
+                    <h3 className="font-serif text-3xl text-[#141413] mt-1">
+                      Your Inquiry Brief for {preparedBrief.coupleNames}
                     </h3>
                   </div>
                 </div>
 
-                <p className="text-sm text-[#44403C] leading-relaxed">
-                  Your wedding &amp; events inquiry for{' '}
+                <p className="text-sm text-[#57534E] leading-relaxed">
+                  Your inquiry brief for{' '}
                   <strong className="text-[#141413]">
-                    {submittedInquiry.venueLocation}
+                    {preparedBrief.venueLocation}
                   </strong>{' '}
                   on{' '}
                   <strong className="text-[#141413]">
-                    {submittedInquiry.eventDate}
+                    {preparedBrief.eventDate}
                   </strong>{' '}
-                  has been logged for{' '}
+                  has been prepared on this page. Because this form prepares
+                  your summary locally and does not send a message automatically,
+                  please share the details below directly with{' '}
                   <strong className="text-[#141413]">
                     {STUDIO_INFO.name} ({STUDIO_INFO.instagramHandle})
-                  </strong>
-                  . Confirmation details have been prepared for{' '}
-                  <span className="underline">{submittedInquiry.contactInfo}</span>.
+                  </strong>{' '}
+                  on Instagram.
                 </p>
 
-                <div className="p-5 rounded-xl bg-[#F3EFEA] border border-[#E6E1DA] space-y-2 text-xs font-mono tabular-nums">
+                <div className="p-5 bg-[#F3EFEA] border border-[#CFC8BC] space-y-2.5 text-xs">
                   <div className="flex justify-between gap-4">
-                    <span className="text-[#57534E]">Selected Celebrations:</span>
+                    <span className="text-[#57534E]">Names:</span>
                     <span className="text-[#141413] font-medium text-right">
-                      {submittedInquiry.selectedCelebrationNames.join(', ')}
+                      {preparedBrief.coupleNames}
                     </span>
                   </div>
                   <div className="flex justify-between gap-4">
-                    <span className="text-[#57534E]">Saved @light_of_love__ Frames:</span>
+                    <span className="text-[#57534E]">Contact:</span>
                     <span className="text-[#141413] text-right">
-                      {submittedInquiry.moodboardFrames.length > 0
-                        ? submittedInquiry.moodboardFrames.join(', ')
+                      {preparedBrief.contactInfo}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-[#57534E]">Date &amp; Location:</span>
+                    <span className="text-[#141413] text-right">
+                      {preparedBrief.eventDate} · {preparedBrief.venueLocation}
+                    </span>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <span className="text-[#57534E]">Saved Photographs:</span>
+                    <span className="text-[#141413] text-right">
+                      {preparedBrief.moodboardFrames.length > 0
+                        ? preparedBrief.moodboardFrames.join(', ')
                         : 'None selected'}
                     </span>
                   </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setSubmittedInquiry(null)}
-                  className="px-5 py-2.5 text-xs font-medium bg-[#141413] text-[#FAF8F5] rounded-lg hover:bg-[#2C2A28] transition-colors cursor-pointer"
-                >
-                  Edit or Submit Another Inquiry
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} noValidate className="space-y-5">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-[#E6E1DA]">
-                  <div>
-                    <h3 className="font-serif text-2xl sm:text-3xl text-[#141413]">
-                      Inquire with {STUDIO_INFO.name}
-                    </h3>
-                    <p className="text-xs text-[#57534E] font-mono mt-0.5">
-                      {STUDIO_INFO.badgeText} · {STUDIO_INFO.filmsHandle} ·{' '}
-                      {STUDIO_INFO.instagramHandle}
+                  <div className="pt-2 border-t border-[#E2DDD5]">
+                    <span className="text-[#57534E] block mb-1">Notes:</span>
+                    <p className="text-[#141413] leading-relaxed">
+                      {preparedBrief.notes}
                     </p>
                   </div>
-                  <span className="text-xs font-mono text-[#57534E] tabular-nums">
-                    Moodboard Attached: {savedIds.length} Frame
-                    {savedIds.length === 1 ? '' : 's'}
-                  </span>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <a
+                    href={STUDIO_INFO.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="min-h-[48px] px-6 py-3 text-xs sm:text-sm font-medium bg-[#141413] text-[#FAF8F5] hover:bg-[#53614A] inline-flex items-center gap-2 transition-colors cursor-pointer editorial-focus"
+                  >
+                    <span>
+                      Continue to {STUDIO_INFO.instagramHandle} on Instagram
+                    </span>
+                    <ArrowUpRight className="w-4 h-4" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setPreparedBrief(null)}
+                    className="min-h-[48px] px-5 py-2.5 text-xs sm:text-sm font-medium border border-[#CFC8BC] text-[#141413] hover:bg-[#F3EFEA] transition-colors cursor-pointer editorial-focus"
+                  >
+                    Edit Inquiry Brief
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                <div className="pb-4 border-b border-[#E2DDD5]">
+                  <p className="text-xs sm:text-sm text-[#57534E]">
+                    Complete the details below to organize your celebration
+                    brief for {STUDIO_INFO.name}.
+                  </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -381,17 +252,23 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       Couple or Client Names *
                     </label>
                     <input
+                      ref={coupleNamesRef}
                       id="couple-names"
                       type="text"
                       value={coupleNames}
                       onChange={(e) => setCoupleNames(e.target.value)}
                       placeholder="e.g., Abhishikth & Deepthi"
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
+                      aria-invalid={Boolean(errors.coupleNames)}
+                      aria-describedby={
+                        errors.coupleNames ? 'couple-names-error' : undefined
+                      }
+                      className="w-full min-h-[44px] px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] editorial-focus"
                     />
                     {errors.coupleNames && (
                       <p
+                        id="couple-names-error"
                         role="alert"
-                        className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
+                        className="mt-1.5 text-xs text-red-800 flex items-center gap-1.5"
                       >
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{errors.coupleNames}</span>
@@ -407,17 +284,23 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       Email, Phone, or Instagram Handle *
                     </label>
                     <input
+                      ref={contactInfoRef}
                       id="couple-contact"
                       type="text"
                       value={contactInfo}
                       onChange={(e) => setContactInfo(e.target.value)}
-                      placeholder="e.g., @mende_deepthi or email@example.com"
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
+                      placeholder="e.g., @yourhandle or email@example.com"
+                      aria-invalid={Boolean(errors.contactInfo)}
+                      aria-describedby={
+                        errors.contactInfo ? 'couple-contact-error' : undefined
+                      }
+                      className="w-full min-h-[44px] px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] editorial-focus"
                     />
                     {errors.contactInfo && (
                       <p
+                        id="couple-contact-error"
                         role="alert"
-                        className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
+                        className="mt-1.5 text-xs text-red-800 flex items-center gap-1.5"
                       >
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{errors.contactInfo}</span>
@@ -435,16 +318,22 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       Celebration Date *
                     </label>
                     <input
+                      ref={eventDateRef}
                       id="event-date"
                       type="date"
                       value={eventDate}
                       onChange={(e) => setEventDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
+                      aria-invalid={Boolean(errors.eventDate)}
+                      aria-describedby={
+                        errors.eventDate ? 'event-date-error' : undefined
+                      }
+                      className="w-full min-h-[44px] px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] editorial-focus"
                     />
                     {errors.eventDate && (
                       <p
+                        id="event-date-error"
                         role="alert"
-                        className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
+                        className="mt-1.5 text-xs text-red-800 flex items-center gap-1.5"
                       >
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{errors.eventDate}</span>
@@ -460,17 +349,25 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                       Event Location *
                     </label>
                     <input
+                      ref={venueLocationRef}
                       id="venue-location"
                       type="text"
                       value={venueLocation}
                       onChange={(e) => setVenueLocation(e.target.value)}
-                      placeholder="e.g., Hyderabad, Mallika Gardens Shamshabad, Gandipet, or Nellore City"
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
+                      placeholder="e.g., Hyderabad and Beyond"
+                      aria-invalid={Boolean(errors.venueLocation)}
+                      aria-describedby={
+                        errors.venueLocation
+                          ? 'venue-location-error'
+                          : undefined
+                      }
+                      className="w-full min-h-[44px] px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] editorial-focus"
                     />
                     {errors.venueLocation && (
                       <p
+                        id="venue-location-error"
                         role="alert"
-                        className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
+                        className="mt-1.5 text-xs text-red-800 flex items-center gap-1.5"
                       >
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{errors.venueLocation}</span>
@@ -484,20 +381,26 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                     htmlFor="vision-notes"
                     className="block text-xs font-medium text-[#141413] mb-1.5"
                   >
-                    Event Details &amp; Favourite @light_of_love__ Series *
+                    Celebration Details &amp; Notes *
                   </label>
                   <textarea
+                    ref={notesRef}
                     id="vision-notes"
                     rows={4}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Share details about your Christian wedding, couple shoot, Haldi celebration, bridal portraits, or saree ceremony..."
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-[#D6D0C6] rounded-lg text-[#141413] focus:outline-none focus:border-[#141413]"
+                    placeholder="Share details about your wedding, couple shoot, Haldi celebration, bridal portraits, or saree ceremony..."
+                    aria-invalid={Boolean(errors.notes)}
+                    aria-describedby={
+                      errors.notes ? 'vision-notes-error' : undefined
+                    }
+                    className="w-full px-3.5 py-2.5 text-sm bg-[#FAF8F5] border border-[#CFC8BC] text-[#141413] editorial-focus"
                   />
                   {errors.notes && (
                     <p
+                      id="vision-notes-error"
                       role="alert"
-                      className="mt-1.5 text-xs text-red-700 flex items-center gap-1"
+                      className="mt-1.5 text-xs text-red-800 flex items-center gap-1.5"
                     >
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{errors.notes}</span>
@@ -506,18 +409,20 @@ export function CommissionSection({ savedIds }: CommissionSectionProps) {
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="text-xs text-[#57534E] font-mono">
-                    Selected:{' '}
+                  <div className="text-xs text-[#57534E]">
+                    Includes{' '}
                     <strong className="text-[#141413]">
-                      {summary.selectedCount} Celebration Series
+                      {savedIds.length} saved{' '}
+                      {savedIds.length === 1 ? 'photograph' : 'photographs'}
                     </strong>
                   </div>
 
                   <button
                     type="submit"
-                    className="px-6 py-3.5 text-sm font-medium bg-[#141413] text-[#FAF8F5] rounded-lg hover:bg-[#2C2A28] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                    className="min-h-[48px] px-7 py-3 text-sm font-medium bg-[#141413] text-[#FAF8F5] hover:bg-[#53614A] inline-flex items-center justify-center gap-2 transition-colors whitespace-nowrap shrink-0 cursor-pointer editorial-focus"
                   >
-                    Submit Inquiry to {STUDIO_INFO.name}
+                    <span>Prepare Inquiry</span>
+                    <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
               </form>
