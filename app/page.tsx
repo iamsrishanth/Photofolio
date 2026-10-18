@@ -130,15 +130,17 @@ export default function HomePage() {
 
       <Footer onNavigate={scrollToSection} inert={isModalOpen} />
 
-      <LightboxModal
-        work={lightboxWork}
-        worksList={lightboxList}
-        savedIds={savedIds}
-        onClose={handleCloseLightbox}
-        onSelectWork={setLightboxWork}
-        onToggleSave={handleToggleSave}
-        onOpenStory={handleSelectStory}
-      />
+      {isModalOpen && lightboxWork && (
+        <LightboxModal
+          work={lightboxWork}
+          worksList={lightboxList}
+          savedIds={savedIds}
+          onClose={handleCloseLightbox}
+          onSelectWork={setLightboxWork}
+          onToggleSave={handleToggleSave}
+          onOpenStory={handleSelectStory}
+        />
+      )}
     </div>
   );
 }

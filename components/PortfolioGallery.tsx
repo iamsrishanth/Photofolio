@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import {
   Search,
   Heart,
@@ -60,7 +59,6 @@ export function PortfolioGallery({
   const [activeIndexWorkId, setActiveIndexWorkId] = useState<string>(
     GALLERY_WORKS[0].id
   );
-  const shouldReduceMotion = useReducedMotion();
 
   const filteredWorks = useMemo(() => {
     return filterAndSortGallery(GALLERY_WORKS, {
@@ -373,37 +371,16 @@ export function PortfolioGallery({
           </div>
         ) : viewMode === 'bento' ? (
           /* MODE 1: Editorial Sequence (Curated 12-column publication spreads with consistent white space) */
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredWorks.map((work) => {
-                const isSaved = savedIds.includes(work.id);
-                const { colSpan, aspect, sizes } = getEditorialGridClasses(work);
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start">
+            {filteredWorks.map((work) => {
+              const isSaved = savedIds.includes(work.id);
+              const { colSpan, aspect, sizes } = getEditorialGridClasses(work);
 
-                return (
-                  <motion.article
-                    key={work.id}
-                    layout
-                    initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    exit={
-                      shouldReduceMotion
-                        ? { opacity: 0 }
-                        : { opacity: 0, scale: 0.98 }
-                    }
-                    viewport={{ once: true, amount: 0.12 }}
-                    transition={{
-                      duration: shouldReduceMotion ? 0 : 0.45,
-                      ease: [0.22, 1, 0.36, 1],
-                      layout: {
-                        duration: shouldReduceMotion ? 0 : 0.45,
-                        ease: [0.22, 1, 0.36, 1],
-                      },
-                    }}
-                    className={`${colSpan} flex flex-col group`}
-                  >
+              return (
+                <article
+                  key={work.id}
+                  className={`${colSpan} flex flex-col group`}
+                >
                   {/* Photograph Frame */}
                   <div className="relative w-full border border-[#E2DDD5] bg-[#EBE6DF]">
                     <button
@@ -501,47 +478,22 @@ export function PortfolioGallery({
                       </div>
                     </div>
                   </details>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                </article>
+              );
+            })}
+          </div>
         ) : viewMode === 'masonry' ? (
           /* MODE 2: Masonry Grid Preserving Natural Portrait & Landscape Ratios */
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start"
-          >
-            <AnimatePresence mode="popLayout">
-              {filteredWorks.map((work) => {
-                const isSaved = savedIds.includes(work.id);
-                const aspectClass =
-                  work.aspectRatio === 'landscape'
-                    ? 'aspect-[3/2]'
-                    : 'aspect-[4/5]';
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 sm:gap-x-7 sm:gap-y-9 items-start">
+            {filteredWorks.map((work) => {
+              const isSaved = savedIds.includes(work.id);
+              const aspectClass =
+                work.aspectRatio === 'landscape'
+                  ? 'aspect-[3/2]'
+                  : 'aspect-[4/5]';
 
-                return (
-                  <motion.article
-                    key={work.id}
-                    layout
-                    initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    exit={
-                      shouldReduceMotion
-                        ? { opacity: 0 }
-                        : { opacity: 0, scale: 0.98 }
-                    }
-                    viewport={{ once: true, amount: 0.12 }}
-                    transition={{
-                      duration: shouldReduceMotion ? 0 : 0.45,
-                      ease: [0.22, 1, 0.36, 1],
-                      layout: {
-                        duration: shouldReduceMotion ? 0 : 0.45,
-                        ease: [0.22, 1, 0.36, 1],
-                      },
-                    }}
-                    className="flex flex-col group"
-                  >
+              return (
+                <article key={work.id} className="flex flex-col group">
                   <div className="relative w-full border border-[#E2DDD5] bg-[#EBE6DF]">
                     <button
                       type="button"
@@ -625,41 +577,26 @@ export function PortfolioGallery({
                       </a>
                     </div>
                   </details>
-                  </motion.article>
-                );
-              })}
-            </AnimatePresence>
-          </motion.div>
+                </article>
+              );
+            })}
+          </div>
         ) : (
           /* MODE 3: Archive Index (Works on keyboard focus, click selection, and hover) */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <motion.div layout className="lg:col-span-7 border-t border-[#CFC8BC]">
-              <AnimatePresence mode="popLayout">
-                {filteredWorks.map((work) => {
-                  const isSelected = activeIndexPreviewWork.id === work.id;
-                  const isSaved = savedIds.includes(work.id);
-                  return (
-                    <motion.div
-                      key={work.id}
-                      layout
-                      initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      viewport={{ once: true, amount: 0.1 }}
-                      transition={{
-                        duration: shouldReduceMotion ? 0 : 0.35,
-                        ease: [0.22, 1, 0.36, 1],
-                        layout: {
-                          duration: shouldReduceMotion ? 0 : 0.35,
-                          ease: [0.22, 1, 0.36, 1],
-                        },
-                      }}
-                      onMouseEnter={() => setActiveIndexWorkId(work.id)}
-                      onFocusCapture={() => setActiveIndexWorkId(work.id)}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 px-3 border-b border-[#E2DDD5] transition-colors ${
-                        isSelected ? 'bg-[#DDE3D7]/45' : 'hover:bg-[#F3EFEA]'
-                      }`}
-                    >
+            <div className="lg:col-span-7 border-t border-[#CFC8BC]">
+              {filteredWorks.map((work) => {
+                const isSelected = activeIndexPreviewWork.id === work.id;
+                const isSaved = savedIds.includes(work.id);
+                return (
+                  <div
+                    key={work.id}
+                    onMouseEnter={() => setActiveIndexWorkId(work.id)}
+                    onFocusCapture={() => setActiveIndexWorkId(work.id)}
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3.5 px-3 border-b border-[#E2DDD5] transition-colors ${
+                      isSelected ? 'bg-[#DDE3D7]/45' : 'hover:bg-[#F3EFEA]'
+                    }`}
+                  >
                     <div className="flex items-baseline gap-4 min-w-0">
                       <span className="font-mono text-xs text-[#57534E] tabular-nums shrink-0">
                         {work.frameNumber}
@@ -718,11 +655,10 @@ export function PortfolioGallery({
                         Open
                       </button>
                     </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </motion.div>
+                  </div>
+                );
+              })}
+            </div>
 
             {/* Sticky Preview Pane */}
             <div className="lg:col-span-5 lg:sticky lg:top-24 border border-[#E2DDD5] bg-[#F3EFEA] p-5">

@@ -31,7 +31,12 @@ export function HeroSection({
   );
 
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const heroRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleNextSlide = useCallback(() => {
     setActiveSlideIndex((prev) => (prev + 1) % featuredWorks.length);
@@ -173,6 +178,7 @@ export function HeroSection({
                         {featuredWorks.map((work, idx) => {
                           const isActive = idx === activeSlideIndex;
                           const isFirst = idx === 0;
+                          if (!isActive && !mounted) return null;
                           return (
                             <div
                               key={work.id}
