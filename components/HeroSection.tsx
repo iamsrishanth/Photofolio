@@ -35,14 +35,19 @@ export function HeroSection({
   const heroRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const handle = window.setTimeout(() => {
+      setMounted(true);
+    }, 3000);
+    return () => window.clearTimeout(handle);
   }, []);
 
   const handleNextSlide = useCallback(() => {
+    setMounted(true);
     setActiveSlideIndex((prev) => (prev + 1) % featuredWorks.length);
   }, [featuredWorks.length]);
 
   const handlePrevSlide = useCallback(() => {
+    setMounted(true);
     setActiveSlideIndex(
       (prev) => (prev - 1 + featuredWorks.length) % featuredWorks.length
     );
@@ -195,7 +200,7 @@ export function HeroSection({
                                 focalPosition={
                                   work.focalPosition ?? '50% 24%'
                                 }
-                                sizes="(max-width: 1024px) 100vw, 560px"
+                                sizes="(max-width: 640px) 92vw, (max-width: 1024px) 60vw, 560px"
                                 priority={isFirst}
                                 fetchPriority={isFirst ? 'high' : 'low'}
                                 loading={isFirst ? 'eager' : 'lazy'}

@@ -9,7 +9,7 @@ import './globals.css';
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
   weight: ['400', '600'],
-  style: ['normal', 'italic'],
+  style: ['normal'],
   variable: '--font-cormorant',
   display: 'swap',
 });
@@ -26,6 +26,7 @@ const jetbrains = JetBrains_Mono({
   weight: ['400'],
   variable: '--font-jetbrains',
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
