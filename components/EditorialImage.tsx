@@ -17,6 +17,8 @@ interface EditorialImageProps {
   width?: number;
   height?: number;
   fill?: boolean;
+  fetchPriority?: 'high' | 'low' | 'auto';
+  loading?: 'eager' | 'lazy';
 }
 
 export function EditorialImage({
@@ -32,8 +34,12 @@ export function EditorialImage({
   width = 1440,
   height = 1800,
   fill = true,
+  fetchPriority,
+  loading,
 }: EditorialImageProps) {
   const [hasError, setHasError] = useState(false);
+  const effectiveFetchPriority = fetchPriority ?? (priority ? 'high' : 'auto');
+  const effectiveLoading = loading ?? (priority ? 'eager' : 'lazy');
 
   return (
     <div className={containerClassName}>
@@ -45,6 +51,8 @@ export function EditorialImage({
             fill
             sizes={sizes}
             priority={priority}
+            fetchPriority={effectiveFetchPriority}
+            loading={effectiveLoading}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
             className={className}
@@ -58,6 +66,8 @@ export function EditorialImage({
             height={height}
             sizes={sizes}
             priority={priority}
+            fetchPriority={effectiveFetchPriority}
+            loading={effectiveLoading}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
             className={className}

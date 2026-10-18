@@ -6,10 +6,22 @@ import { GALLERY_WORKS, COUPLE_STORIES } from '@/lib/portfolio-data';
 import type { GalleryWork } from '@/lib/portfolio-logic';
 import { Navbar } from '@/components/Navbar';
 import { HeroSection } from '@/components/HeroSection';
-import { PortfolioGallery } from '@/components/PortfolioGallery';
-import { CoupleMonographs } from '@/components/CoupleMonographs';
-import { AtelierEthosSection } from '@/components/AtelierEthosSection';
 import { Footer } from '@/components/Footer';
+
+const PortfolioGallery = dynamic(
+  () => import('@/components/PortfolioGallery').then((mod) => mod.PortfolioGallery),
+  { ssr: true }
+);
+
+const CoupleMonographs = dynamic(
+  () => import('@/components/CoupleMonographs').then((mod) => mod.CoupleMonographs),
+  { ssr: true }
+);
+
+const AtelierEthosSection = dynamic(
+  () => import('@/components/AtelierEthosSection').then((mod) => mod.AtelierEthosSection),
+  { ssr: true }
+);
 
 const CommissionSection = dynamic(
   () => import('@/components/CommissionSection').then((mod) => mod.CommissionSection),
