@@ -198,6 +198,7 @@ export function HeroSection({
                                 priority={isFirst}
                                 fetchPriority={isFirst ? 'high' : 'low'}
                                 loading={isFirst ? 'eager' : 'lazy'}
+                                quality={70}
                                 containerClassName="w-full h-full relative overflow-hidden"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                               />

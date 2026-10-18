@@ -19,6 +19,7 @@ interface EditorialImageProps {
   fill?: boolean;
   fetchPriority?: 'high' | 'low' | 'auto';
   loading?: 'eager' | 'lazy';
+  quality?: number;
 }
 
 export function EditorialImage({
@@ -36,6 +37,7 @@ export function EditorialImage({
   fill = true,
   fetchPriority,
   loading,
+  quality = 75,
 }: EditorialImageProps) {
   const [hasError, setHasError] = useState(false);
   const effectiveFetchPriority = fetchPriority ?? (priority ? 'high' : 'auto');
@@ -53,6 +55,7 @@ export function EditorialImage({
             priority={priority}
             fetchPriority={effectiveFetchPriority}
             loading={effectiveLoading}
+            quality={quality}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
             className={className}
@@ -68,6 +71,7 @@ export function EditorialImage({
             priority={priority}
             fetchPriority={effectiveFetchPriority}
             loading={effectiveLoading}
+            quality={quality}
             referrerPolicy="no-referrer"
             onError={() => setHasError(true)}
             className={className}
